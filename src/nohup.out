@@ -1,0 +1,54 @@
+ * Serving Flask app "dbSTRapp" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+Traceback (most recent call last):
+  File "dbSTRapp.py", line 128, in <module>
+    app.run_server(debug=True)
+  File "/usr/lib/python3.4/site-packages/dash/dash.py", line 568, in run_server
+    self.server.run(port=port, debug=debug, **flask_run_options)
+  File "/usr/lib/python3.4/site-packages/flask/app.py", line 943, in run
+    run_simple(host, port, self, **options)
+  File "/usr/lib/python3.4/site-packages/werkzeug/serving.py", line 795, in run_simple
+    s.bind(get_sockaddr(hostname, port, address_family))
+OSError: [Errno 98] Address already in use
+ * Serving Flask app "dbSTRapp" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+Traceback (most recent call last):
+  File "dbSTRapp.py", line 128, in <module>
+    app.run_server(debug=True)
+  File "/usr/lib/python3.4/site-packages/dash/dash.py", line 568, in run_server
+    self.server.run(port=port, debug=debug, **flask_run_options)
+  File "/usr/lib/python3.4/site-packages/flask/app.py", line 943, in run
+    run_simple(host, port, self, **options)
+  File "/usr/lib/python3.4/site-packages/werkzeug/serving.py", line 795, in run_simple
+    s.bind(get_sockaddr(hostname, port, address_family))
+OSError: [Errno 98] Address already in use
+ * Serving Flask app "dbSTRapp" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+ * Running on http://127.0.0.1:8050/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 350-084-898
+127.0.0.1 - - [07/Aug/2018 12:26:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 12:26:51] "GET /_dash-layout HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 12:26:51] "GET /_dash-dependencies HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 12:26:51] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 12:26:52] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 12:26:53] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 12:47:44] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 12:47:51] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 13:22:12] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 13:22:12] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 13:24:00] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 13:24:02] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 13:24:05] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 13:24:06] "POST /_dash-update-component HTTP/1.1" 200 -
+127.0.0.1 - - [07/Aug/2018 13:24:08] "POST /_dash-update-component HTTP/1.1" 200 -

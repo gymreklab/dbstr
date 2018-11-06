@@ -1,0 +1,54 @@
+<!doctype html>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+		
+<script>
+jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+       alert($(this).data("href"));
+        window.location = $(this).data("href");
+    });
+});
+</script>
+{% block main %}
+<title>Summary reult</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<div class=page>
+<header>
+
+  <div id="chart" class="chart">
+  </div>
+    <!-- D3.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <!-- Plotly.js -->
+    <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+
+    <script type="text/javascript">
+
+        var graphs = {{graphJSON | safe}};
+        //var ids = {{ids | safe}};
+
+            Plotly.plot('chart',graphs,{}); // the ID of the div, created above
+
+    </script>
+</header>
+<table border="1" cellpadding="5" cellspacing="5">
+{% for d in table %}
+ <tr>
+    <td><a href="/dashapp?query={{d[4]}}?chr={{d[8]}}" target="_blank">STR detail</a></td>
+    <td>{{ d[1] }}</td>
+    <td>{{ d[2] }}</td>
+    <td>{{ d[3] }}</td>
+    <td>{{ d[5] }}</td>
+    <td>{{ d[6] }}</td>
+    <td>{{ d[7] }}</td>
+    <td>{{ d[9] }}</td>
+    <td>{{ d[10] }}</td>
+
+ </tr>
+{% endfor %}
+</table>
+
+</div>
+{% endblock %}
