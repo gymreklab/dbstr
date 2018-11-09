@@ -1,0 +1,5 @@
+# Database files
+*.db
+
+# Emacs temp files
+*~
