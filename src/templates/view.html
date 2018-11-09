@@ -1,0 +1,33 @@
+<!doctype html>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		
+<script>
+jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+       alert($(this).data("href"));
+        window.location = $(this).data("href");
+    });
+});
+</script>
+{% block main %}
+<title>Summary reult</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<div class=page>
+<table border="1" cellpadding="5" cellspacing="5">
+{% for d in table %}
+ <tr>
+    <td><a href="/dashapp?query={{d[4]}}?chr={{d[8]}}" target="_blank">STR detail</a></td>
+    <td>{{ d[1] }}</td>
+    <td>{{ d[2] }}</td>
+    <td>{{ d[3] }}</td>
+    <td>{{ d[5] }}</td>
+    <td>{{ d[6] }}</td>
+    <td>{{ d[7] }}</td>
+    <td>{{ d[9] }}</td>
+    <td>{{ d[10] }}</td>
+
+ </tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}
