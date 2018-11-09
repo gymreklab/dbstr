@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+"""
+WebSTR database application
+
+"""
+
+import argparse
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -346,5 +353,12 @@ def awesome():
     return render_template('view2.html',table=df,
                            graphJSON=mytest )
 
+def main():
+    parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument("--host", help="Host to run app", type=str, default="0.0.0.0")
+    parser.add_argument("--port", help="Port to run app", type=int, default=5000)
+    args = parser.parse_args()
+    server.run(debug=True, host=args.host, port=args.port)
+
 if __name__ == '__main__':
-    server.run(debug=True)
+    main()
