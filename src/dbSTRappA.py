@@ -8,7 +8,7 @@ import argparse
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from flask import Flask, render_template, request, session 
+from flask import Flask, redirect, render_template, request, session, url_for
 from dash.dependencies import Output, Input, State
 from dash.exceptions import PreventUpdate
 import dash_table_experiments as dt
@@ -247,35 +247,6 @@ def update_figure2(rows):
     fig = go.Figure(data=data, layout = layout)
     return fig
 
-@server.route('/')
-def index():
-    return '''
-<html>
-<div>
-    <h1>Flask App</h1>
-</div>
-</html>
-'''
-
-@server.route('/dbSTR')
-def test1():
-    db = get_db()
-    sqlip = 'select * from COHORTS where active = "Y";'
-    print(sqlip)
-    ct = db.cursor()
-    df = ct.execute(sqlip).fetchall()
-    print(df)
-    return render_template('homepage.html', option_list = df)
-
-@server.route('/faq')
-def faq1():
-    return '''
-<html>
-<div>
-    <h1>Flask App faqs... test 1</h1>
-</div>
-</html>
-'''
 
 def connect_db():
     """
@@ -353,6 +324,39 @@ def awesome():
     return render_template('view2.html',table=df,
                            graphJSON=mytest )
 
+#################### Render HTML pages ###############
+@server.route('/')
+@server.route('/dbSTR')
+def dbSTRHome():
+    db = get_db()
+    sqlip = 'select * from COHORTS where active = "Y";'
+    print(sqlip)
+    ct = db.cursor()
+    df = ct.execute(sqlip).fetchall()
+    print(df)
+    return render_template('homepage.html', option_list = df)
+
+@server.route('/faq')
+def dbSTRFAQ():
+    return render_template("faq.html")
+
+@server.route('/contact')
+def dbSTRContact():
+    return render_template("contact.html")
+
+@server.route('/about')
+def dbSTRAbout():
+    return render_template("about.html")
+
+@server.route('/downloads')
+def dbSTRDownloads():
+    return render_template("downloads.html")
+
+@server.route('/terms')
+def dbSTRTerms():
+    return render_template("terms.html")
+
+#################### Set up and run the server ###############
 def main():
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument("--host", help="Host to run app", type=str, default="0.0.0.0")
