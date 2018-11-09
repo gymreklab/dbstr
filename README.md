@@ -1,4 +1,6 @@
 # dbstr
-dbstr
 
-on snorlax run python3 dbSTRappA.py
+To run:
+```
+./src/dbSTRappA.py --host 0.0.0.0 --port <port>
+```
