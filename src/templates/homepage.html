@@ -3,15 +3,16 @@
     <script>
         $('#navbar_form_container').hide();
     </script>
-    <select name="dbs" width="900px">
-    {% for o in option_list %}
-       <option value="{{ o.name }}" SELECTED > {{ o.name }} </option>
-    {% endfor %}
-       </select>
+    <form action="/resetdb">
+      <select>
+      {% for opt in option_list %}
+         <option value= {{ opt[1] }} >  {{ opt[0] }} </option>
+      {% endfor %}
+      </select>
     <td>
-      <input class="button1" type="submit" value="Select">
+      <input class="button1" type="submit" value="Select" name="newdbpath">
     </td>
-    
+    </form>  
     <div class="container">
         <h1 id="home-title">STR Database Browser <a href="/about" style="color: black;"></a></h1>
         <div class="row">

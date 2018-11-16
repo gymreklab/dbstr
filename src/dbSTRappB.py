@@ -35,7 +35,7 @@ server.secret_key = 'dbSTR'
 global BasePath
 glochrom = 1
 BasePath = "/storage/resources/dbase/dbSTR/SS1/"
-BasePathM = "/storage/resources/dbase/dbSTR/SS2/"
+BasePathM = "/storage/resources/dbase/dbSTR/"
 
 app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
 
@@ -71,26 +71,10 @@ def getdata(chrom,sqlip):
     sqltemp = ("DROP TABLE IF EXISTS SMTBL;")
     chrd = ct.execute(sqltemp).fetchall()
 
-    sql3 = (" CREATE TEMPORARY TABLE SMTBL AS"
-            " select base.*,hzyg.sample,' ' alt,length(base.ref) lent,2 mult from"
-            " vcfBase as base,"
-            " vcfhomozyg as hzyg"
-            " where"
-            "     base.str_id=hzyg.str_id"
-            " and hzyg.str_id = '{}'"
-            " UNION ALL"
-            " select base.*,GT.sample,alt.alt,length(alt.alt) lent,1 mult from"
-            " vcfBase as base,"
-            " vcfAlt as alt,"
-            " altGT as gt"
-            " where "
-            "     base.pos=alt.pos"
-            " and base.str_id=alt.str_id"
-            " and base.str_id = gt.str_id"
-            " and base.str_id = '{}'"
-            " and alt.str_id = gt.str_id"
-            " and gt.altref_gt = alt.altorder;").format(sqlip,sqlip)
-    sqlstbl = ct.execute(sql3).fetchall()
+    sql4 = (" CREATE TEMPORARY TABLE SMTBL AS"
+            " select * from Sample_szes where str_id = '{}' "
+             ).format(sqlip)
+    sqlstbl = ct.execute(sql4).fetchall()
 
     sqlt = ("SELECT "
            " Case mult when 2 then max(lent) else 0 end, "
@@ -176,14 +160,6 @@ def update_table(user_selection):
     For user selections, return the relevant table
     """
 
-    #the_attrib = "gene_name"
-
-    #if user_selection[:4] == "ENSG":
-    #    the_attrib = "gene_id"
-    #    print(user_selection)
-    #else:
-    #    the_attrib = "gene_name"
-
     sql2 = ("select * from Sample_szes" 
             " where str_id = '{}' "
             " ; ").format(user_selection)
@@ -195,7 +171,7 @@ def update_table(user_selection):
 @app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
 def getdata2(user_selection):
     global glochrom
-    connt = sqlite3.connect("dbSTR" + glochrom + ".db")
+    connt = sqlite3.connect(BasePath + "dbSTR" + glochrom + ".db")
 
     sql3 = ("SELECT lent, "
            " Case mult when 2 then max(lent) else 0 end, "
@@ -233,12 +209,12 @@ def update_figure2(rows):
 
     genes = dff
     traceg = go.Histogram(
-             x = genes['length'],
+             x = genes['lent'],
              text = genes['alt'])
 
     layout = go.Layout(
          xaxis=dict(
-              range= [min(genes['length']),max(genes['length'])],
+              range= [min(genes['lent']),max(genes['lent'])],
               dtick=1
          )
     )
@@ -275,42 +251,74 @@ def awesome():
 
     connt = sqlite3.connect(BasePathM + "dbSTR.db")
     ct = connt.cursor()
-
-    the_attrib = "gene_name"
-
-    if sqlip[:3] == "ENS":
-        the_attrib = "gene_id"
-        print(sqlip)
-    else:
+    
+    colpos = sqlip.find(':')
+    if colpos < 0:
         the_attrib = "gene_name"
 
-    sql2 = ("select fe.seqid,fe.featuretype,minmaxstart.start begin,minmaxstart.end ending,str.strid,str.motif,str.start,str.end,substr(str.chrom,4,length(str.chrom)),avg(str.period) peri,avg(str.length)"
-    " from"
-    " strlocmotif str,"
-    " features fe,"
-    " newattrib at,"
-    " (select seqid,min(start)-10000 start, max(end)+10000 end"
-    " from features fe,"
-    " newattrib at"
-    " where"
-    " at.id = fe.id"
-    " and at.value = '{}' "
-    " and at.attrib = '{}' "
-    " group by seqid) minmaxstart"
-    " where"
-    " str.chrom =  minmaxstart.seqid"
-    " and str.start >= minmaxstart.start"
-    " and str.end   <= minmaxstart.end"
-    " and at.id = fe.id"
-    " and at.value = '{}' "
-    " and at.attrib = '{}' "
-    " and fe.seqid = minmaxstart.seqid"
-    " group by fe.seqid,fe.featuretype,minmaxstart.start,minmaxstart.end,str.start,str.end,str.motif,str.strid,str.chrom;").format(sqlip,the_attrib,sqlip,the_attrib)
-    
+        if sqlip[:3] == "ENS":
+            the_attrib = "gene_id"
+            print(sqlip)
+        else:
+            the_attrib = "gene_name"
+
+        sql2 = ("select fe.seqid,fe.featuretype,minmaxstart.start begin,minmaxstart.end ending,str.strid,str.motif,str.start,str.end,substr(str.chrom,4,length(str.chrom)),avg(str.period) peri,avg(str.length)"
+        " from"
+        " strlocmotif str,"
+        " features fe,"
+        " newattrib at,"
+        " (select seqid,min(start)-10000 start, max(end)+10000 end"
+        " from features fe,"
+         " newattrib at"
+        " where"
+        " at.id = fe.id"
+        " and at.value = '{}' "
+        " and at.attrib = '{}' "
+        " group by seqid) minmaxstart"
+        " where"
+        " str.chrom =  minmaxstart.seqid"
+        " and str.start >= minmaxstart.start"
+        " and str.end   <= minmaxstart.end"
+        " and at.id = fe.id"
+        " and at.value = '{}' "
+        " and at.attrib = '{}' "
+        " and fe.seqid = minmaxstart.seqid"
+        " group by fe.seqid,fe.featuretype,minmaxstart.start,minmaxstart.end,str.start,str.end,str.motif,str.strid,str.chrom;").format(sqlip,the_attrib,sqlip,the_attrib)
+   
+    else:
+        thechr = sqlip[:(colpos)]
+        thepos = sqlip[(colpos+1):]
+        thesep = thepos.find('-')
+        posf = thepos[:(thesep)]
+        poss = thepos[(thesep+1):]
+        print(thechr+posf+poss) 
+        sql2 = ("select fe.seqid,fe.featuretype,minmaxstart.start begin,minmaxstart.end ending,str.strid,str.motif,str.start,str.end,substr(str.chrom,4,length(str.chrom)),avg(str.period) peri,avg(str.length)"
+        " from"
+        " strlocmotif str,"
+        " features fe,"
+        " newattrib at,"
+        " (select seqid,min(start)-10000 start, max(end)+10000 end"
+        " from features fe,"
+         " newattrib at"
+        " where"
+        " at.id = fe.id"
+        " and fe.seqid = '{}' "
+        " and fe.start >= '{}' "
+        " and fe.end <= '{}' "
+        " group by seqid) minmaxstart"
+        " where"
+        " str.chrom =  minmaxstart.seqid"
+        " and str.start >= minmaxstart.start"
+        " and str.end   <= minmaxstart.end"
+        " and at.id = fe.id"
+        " and fe.seqid = minmaxstart.seqid"
+        " group by fe.seqid,fe.featuretype,minmaxstart.start,minmaxstart.end,str.start,str.end,str.motif,str.strid,str.chrom;").format("chr"+thechr,posf,poss)
+
+ 
     df = ct.execute(sql2).fetchall()
     
     df_df = pd.DataFrame.from_records(df)
-
+    print(df_df.head())
     trace1 = go.Scatter(
        x = npa.linspace(1,len(df),len(df)),
        y = df_df[7]
@@ -333,6 +341,11 @@ def dbSTRHome():
     df = ct.execute(sqlip).fetchall()
     print(df)
     return render_template('homepage.html', option_list = df)
+
+@server.route('/resetdb')
+def simpt():
+    sqlip = request.args.get('newdbpath')
+    return print(sqlip)
 
 @server.route('/faq')
 def dbSTRFAQ():
