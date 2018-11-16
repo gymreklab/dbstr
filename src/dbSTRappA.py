@@ -35,6 +35,7 @@ server.secret_key = 'dbSTR'
 global BasePath
 glochrom = 1
 BasePath = "/storage/resources/dbase/dbSTR/SS1/"
+BasePathM = "/storage/resources/dbase/dbSTR/SS2/"
 
 app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
 
@@ -45,12 +46,12 @@ def run_query_withparms(sql):
     return df
 
 def run_query_withparms2(sql):
-    conn = sqlite3.connect(BasePath + "dbSTR.db")
+    conn = sqlite3.connect(BasePathM + "dbSTR.db")
     df   = pd.read_sql_query( sql  , conn)
     return df
 
 def run_query_withparmsi(sql,value):
-    conn = sqlite3.connect(BasePath + "dbSTR.db")
+    conn = sqlite3.connect(BasePathM + "dbSTR.db")
     cur = conn.cursor()
     cur.execute(sql,value)
     conn.close()
@@ -58,7 +59,7 @@ def run_query_withparmsi(sql,value):
 
 
 def run_query_withparmstr(sql):
-    conn = sqlite3.connect(BasePath + "dbSTR.db")
+    conn = sqlite3.connect(BasePathM + "dbSTR.db")
     c = conn.cursor()
     chr = c.execute(sql).fetchall()
     return chr[0][0]
@@ -252,7 +253,7 @@ def connect_db():
     """
     Connects to the specific database.
     """
-    tfile = BasePath + "dbSTR.db"
+    tfile =  BasePathM + "dbSTR.db"
     print(tfile)
     conn = sqlite3.connect(tfile)
     return conn
@@ -272,7 +273,7 @@ def awesome():
     sqlip = request.args.get('query')
     print(sqlip)
 
-    connt = sqlite3.connect(BasePath + "dbSTR.db")
+    connt = sqlite3.connect(BasePathM + "dbSTR.db")
     ct = connt.cursor()
 
     the_attrib = "gene_name"
@@ -316,9 +317,6 @@ def awesome():
     )
 
     data = [trace1]
-    #grappJSON = json.dumps(result,
-    #                       default=lambda df: json.loads(df.to_json()))
-    #mytest = json.loads(grappJSON)
     ids = range(1,len(df),1)
     mytest = json.dumps(data,cls=plotly.utils.PlotlyJSONEncoder)
     return render_template('view2.html',table=df,

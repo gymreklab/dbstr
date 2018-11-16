@@ -119,11 +119,46 @@
 }
         /* Define the hover highlight color for the table row */
 .hoverTable tr:hover {
-       background-color: #ffff99;
+       background-color: #00ff00;
 }
 
 th.allele_frequency_column {
     width: 150px;
+}
+
+tr:hover {
+    background-color: #000;
+}
+
+tr:hover td {
+    background-color: #00ff00; /* or #000 */
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  border: 3px solid purple;
+}
+
+thead th:nth-child(1) {
+  width: 30%;
+}
+
+thead th:nth-child(2) {
+  width: 20%;
+}
+
+thead th:nth-child(3) {
+  width: 15%;
+}
+
+thead th:nth-child(4) {
+  width: 35%;
+}
+
+th, td {
+  padding: 20px;
 }
 
 /* tooltips - based on http://cbracco.me/a-simple-css-tooltip/ */
