@@ -35,7 +35,7 @@ server.secret_key = 'dbSTR'
 global BasePath
 glochrom = 1
 BasePath = "/storage/resources/dbase/dbSTR/SS1/"
-BasePathM = "/storage/resources/dbase/dbSTR/SS2/"
+BasePathM = "/storage/resources/dbase/dbSTR/"
 
 app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
 
