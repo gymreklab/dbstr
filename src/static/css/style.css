@@ -134,13 +134,6 @@ tr:hover td {
     background-color: #00ff00; /* or #000 */
 }
 
-table {
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-  border: 3px solid purple;
-}
-
 thead th:nth-child(1) {
   width: 30%;
 }

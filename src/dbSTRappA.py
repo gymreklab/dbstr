@@ -319,6 +319,7 @@ def awesome():
     data = [trace1]
     ids = range(1,len(df),1)
     mytest = json.dumps(data,cls=plotly.utils.PlotlyJSONEncoder)
+
     return render_template('view2.html',table=df,
                            graphJSON=mytest )
 
