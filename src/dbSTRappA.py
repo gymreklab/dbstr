@@ -195,7 +195,7 @@ def update_table(user_selection):
 @app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
 def getdata2(user_selection):
     global glochrom
-    connt = sqlite3.connect("dbSTR" + glochrom + ".db")
+    connt = sqlite3.connect(BasePath + "dbSTR" + glochrom + ".db")
 
     sql3 = ("SELECT lent, "
            " Case mult when 2 then max(lent) else 0 end, "
@@ -233,12 +233,12 @@ def update_figure2(rows):
 
     genes = dff
     traceg = go.Histogram(
-             x = genes['length'],
+             x = genes['lent'],
              text = genes['alt'])
 
     layout = go.Layout(
          xaxis=dict(
-              range= [min(genes['length']),max(genes['length'])],
+              range= [min(genes['lent']),max(genes['lent'])],
               dtick=1
          )
     )
