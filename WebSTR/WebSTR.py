@@ -53,9 +53,11 @@ def awesome():
     region_query = request.args.get('query')
     region_data = GetRegionData(region_query, BasePathM)
     if region_data.shape[0] > 0:
-        plotly_json = GetGenePlotlyJSON(region_data)
+        chrom = region_data["chrom"].values[0].replace("chr","")
+        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(region_data, region_query, chrom)
         return render_template('view2.html',table=region_data.to_records(index=False),
-                               graphJSON=plotly_json)
+                               graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
+                               chrom=chrom, strids=list(region_data["strid"]))
     else:
         return render_template('view2_nolocus.html')
 

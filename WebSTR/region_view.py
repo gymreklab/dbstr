@@ -52,15 +52,40 @@ def GetColor(period):
     colors = ["gray","red","gold","blue","purple","green"]
     return colors[int(period)-1]
 
-def GetGenePlotlyJSON(region_data):
+def GetGenePlotlyJSON(region_data, region_query, chrom):
     trace1 = go.Scatter(
         x = (region_data["str.start"]+region_data["str.end"])/2,
         y = [0]*region_data.shape[0],
         mode="markers",
         marker=dict(size=10, color=region_data["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
-        text=region_data.apply(lambda x: x["chrom"]+":"+str(x["str.start"]), 1)
+        text=region_data.apply(lambda x: x["chrom"]+":"+str(x["str.start"]), 1),
+        hoverinfo='text'
     )
+
     plotly_data = [trace1]
-    plotly_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder)
-    return plotly_json
+    plotly_layout= go.Layout(
+        title= region_query,
+        hovermode= 'closest',
+        showlegend= False,
+        xaxis=dict(
+            title="Position (chr%s)"%chrom,
+            autorange=True,
+            showgrid=True,
+            zeroline=False,
+            showline=True,
+            showticklabels=True,
+            tickformat = '.0f'
+        ),
+        yaxis=dict(
+            autorange=True,
+            showgrid=False,
+            zeroline=False,
+            showline=False,
+            ticks='',
+            showticklabels=False
+        )
+    )
+    plotly_plot_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder) 
+    plotly_layout_json = json.dumps(plotly_layout, cls=plotly.utils.PlotlyJSONEncoder)
+    return plotly_plot_json, plotly_layout_json
 

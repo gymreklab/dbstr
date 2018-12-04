@@ -5,8 +5,26 @@
 <!-- Div for the plotly chart -->
 <div id="chart" class="chart"></div>
 <script type="text/javascript">
+  var chrom = {{chrom}};
   var graphs = {{graphJSON | safe}};
-  Plotly.plot('chart',graphs,{}); // the ID of the div, created above
+  var layout = {{layoutJSON | safe}};
+  var strids = {{strids | safe}};
+
+  var myPlot = document.getElementById('chart'),
+    d3 = Plotly.d3,
+    data = graphs,
+    layout=layout;
+
+  Plotly.newPlot('chart', data, layout);
+
+  myPlot.on('plotly_click', function(data){
+    var pts = '';
+    for(var i=0; i < data.points.length; i++){
+        url="/dashapp?query="+strids[i]+"?chr="+chrom;
+    }
+    var win = window.open(url, "_blank");
+    win.focus();
+});
 </script>
 
 
