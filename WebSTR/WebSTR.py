@@ -18,11 +18,9 @@ import os
 from locus_view import *
 from region_view import *
 
-#################### Make these as command line arguments ###############
-global BasePath
-glochrom = 1
+#################### Database paths ###############
 BasePath = "/storage/resources/dbase/dbSTR/SS1/"
-BasePathM = "/storage/resources/dbase/dbSTR/"
+DbSTRPath = "/storage/resources/dbase/dbSTR/"
 
 #################### Set up flask server ###############
 server = Flask(__name__)
@@ -51,13 +49,13 @@ def main_update_figure(rows): return update_figure(rows)
 @server.route('/awesome')
 def awesome():
     region_query = request.args.get('query')
-    region_data = GetRegionData(region_query, BasePathM)
+    region_data = GetRegionData(region_query, DbSTRPath)
     if region_data.shape[0] > 0:
-        chrom = region_data["chrom"].values[0].replace("chr","")
-        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(region_data, region_query, chrom)
+        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(region_data, region_query, DbSTRPath)
         return render_template('view2.html',table=region_data.to_records(index=False),
                                graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
-                               chrom=chrom, strids=list(region_data["strid"]))
+                               chrom=region_data["chrom"].values[0].replace("chr",""),
+                               strids=list(region_data["strid"]))
     else:
         return render_template('view2_nolocus.html')
 

@@ -4,8 +4,8 @@ import plotly
 import plotly.graph_objs as go
 from dbutils import *
 
-def GetRegionData(region_query, BasePathM):
-    ct = connect_db(BasePathM).cursor()
+def GetRegionData(region_query, DbSTRPath):
+    ct = connect_db(DbSTRPath).cursor()
     colpos = region_query.find(":")
     genebuf = 5000
     if colpos < 0: # search is by gene
@@ -52,7 +52,10 @@ def GetColor(period):
     colors = ["gray","red","gold","blue","purple","green"]
     return colors[int(period)-1]
 
-def GetGenePlotlyJSON(region_data, region_query, chrom):
+def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
+    chrom = region_data["chrom"].values[0].replace("chr","")
+
+    # Get points for each STR
     trace1 = go.Scatter(
         x = (region_data["str.start"]+region_data["str.end"])/2,
         y = [0]*region_data.shape[0],
@@ -62,7 +65,10 @@ def GetGenePlotlyJSON(region_data, region_query, chrom):
         hoverinfo='text'
     )
 
-    plotly_data = [trace1]
+    # Draw gene info
+    trace2 = GetGeneTrace(region_data, region_query, DbSTRPath)
+
+    plotly_data = [trace1, trace2]
     plotly_layout= go.Layout(
         title= region_query,
         hovermode= 'closest',
@@ -89,3 +95,9 @@ def GetGenePlotlyJSON(region_data, region_query, chrom):
     plotly_layout_json = json.dumps(plotly_layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json, plotly_layout_json
 
+def GetGeneTrace(region_data, region_query, DbSTRPath):
+    # First, get list of genes in this region - TODO
+    # Then, for each gene get features - TODO
+    # Plot each feature - TODO
+    trace = go.Scatter()
+    return trace
