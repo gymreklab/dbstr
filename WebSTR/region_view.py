@@ -58,7 +58,7 @@ def GetGenePlotlyJSON(region_data, region_query, chrom):
         y = [0]*region_data.shape[0],
         mode="markers",
         marker=dict(size=10, color=region_data["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
-        text=region_data.apply(lambda x: x["chrom"]+":"+str(x["str.start"]), 1),
+        text=region_data.apply(lambda x: x["chrom"]+":"+str(x["str.start"]) + " ("+x["motif"]+")", 1),
         hoverinfo='text'
     )
 
