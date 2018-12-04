@@ -1,6 +1,6 @@
-# dbstr
+# WebSTR
 
 To run:
 ```
-./src/dbSTRappA.py --host 0.0.0.0 --port <port>
+./WebSTR/WebSTR.py --host 0.0.0.0 --port <port>
 ```
