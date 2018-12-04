@@ -52,9 +52,12 @@ def main_update_figure(rows): return update_figure(rows)
 def awesome():
     region_query = request.args.get('query')
     region_data = GetRegionData(region_query, BasePathM)
-    plotly_json = GetGenePlotlyJSON(region_data)
-    return render_template('view2.html',table=region_data.to_records(index=False),
-                           graphJSON=plotly_json)
+    if region_data.shape[0] > 0:
+        plotly_json = GetGenePlotlyJSON(region_data)
+        return render_template('view2.html',table=region_data.to_records(index=False),
+                               graphJSON=plotly_json)
+    else:
+        return render_template('view2_nolocus.html')
 
 #################### Render HTML pages ###############
 @server.route('/')

@@ -6,43 +6,46 @@ from dbutils import *
 
 def GetRegionData(region_query, BasePathM):
     ct = connect_db(BasePathM).cursor()
-    the_attrib = "gene_name"
-    if region_query[:3] == "ENS":
-        the_attrib = "gene_id"
-    else: 
+    colpos = region_query.find(":")
+    genebuf = 5000
+    if colpos < 0: # search is by gene
         the_attrib = "gene_name"
+        if region_query[:3] == "ENS":
+            the_attrib = "gene_id"
+        else: 
+            the_attrib = "gene_name"
+        gene_query = ("select fe.seqid,min(fe.start)-{},min(fe.end)+{}"
+                      " from features fe, newattrib at "
+                      " where at.value='{}' and at.attrib='{}' and fe.id=at.id").format(genebuf, genebuf, region_query, the_attrib)
+        gene_df = ct.execute(gene_query).fetchall()
+        if len(gene_df) == 0 or None in gene_df[0]:
+            chrom = None
+            start = None
+            end = None
+        else:
+            chrom = "chr"+gene_df[0][0].replace("chr","")
+            start = int(gene_df[0][1])
+            end = int(gene_df[0][2])
+    else:
+        chrom = "chr"+region_query.split(":")[0].replace("chr","")
+        start = int(region_query.split(":")[1].split("-")[0])
+        end = int(region_query.split(":")[1].split("-")[1])
 
-    sql2 = ("select fe.seqid,fe.featuretype,minmaxstart.start begin,minmaxstart.end ending,str.strid,str.motif,str.start,str.end,substr(str.chrom,4,length(str.chrom)),avg(str.period) peri,avg(str.length)"
-    " from"
-    " strlocmotif str,"
-    " features fe,"
-    " newattrib at,"
-    " (select seqid,min(start)-10000 start, max(end)+10000 end"
-    " from features fe,"
-    " newattrib at"
-    " where"
-    " at.id = fe.id"
-    " and at.value = '{}' "
-    " and at.attrib = '{}' "
-    " group by seqid) minmaxstart"
-    " where"
-    " str.chrom =  minmaxstart.seqid"
-    " and str.start >= minmaxstart.start"
-    " and str.end   <= minmaxstart.end"
-    " and at.id = fe.id"
-    " and at.value = '{}' "
-    " and at.attrib = '{}' "
-    " and fe.seqid = minmaxstart.seqid"
-    " group by fe.seqid,fe.featuretype,minmaxstart.start,minmaxstart.end,str.start,str.end,str.motif,str.strid,str.chrom;").format(region_query,the_attrib,region_query,the_attrib)
-
-    df = ct.execute(sql2).fetchall()
-    df_df = pd.DataFrame.from_records(df)
-    df_df.columns = ["chrom","featuretype","gene.start","gene.end", "strid", "motif", "str.start","str.end","chrom2","period","str.length"]
-    df_df["featuretype"] = "NA" # TODO set
-    df_df["chrom"] = df_df["chrom"].apply(lambda x: x.replace("chr",""))
-    df_df["str.length"] = df_df["str.length"].round(2)
-    df_df = df_df[["chrom","str.start","str.end","motif","period","str.length","strid","featuretype"]].sort_values("str.start")
-    df_df.drop_duplicates(inplace=True)
+    if chrom is not None:
+        region_query = ("select str.chrom,str.strid,str.motif,str.start,str.end,str.period,str.length"
+                        " from"
+                        " strlocmotif str"
+                        " where str.chrom = '{}' and str.start >= {} and str.end <= {}").format(chrom, start, end)
+        df = ct.execute(region_query).fetchall()
+        if len(df) == 0: return pd.DataFrame({})
+        df_df = pd.DataFrame.from_records(df)
+        df_df.columns = ["chrom","strid", "motif", "str.start","str.end","period","str.length"] 
+        df_df["featuretype"] = "NA" # TODO set
+        df_df["chrom"] = df_df["chrom"].apply(lambda x: x.replace("chr",""))
+        df_df["str.length"] = df_df["str.length"].round(2)
+        df_df = df_df[["chrom","str.start","str.end","motif","period","str.length","strid","featuretype"]].sort_values("str.start")
+        df_df.drop_duplicates(inplace=True)
+    else: df_df = pd.DataFrame({})
     return df_df
 
 def GetColor(period):
