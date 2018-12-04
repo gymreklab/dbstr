@@ -57,6 +57,9 @@ def run_query_withparmsi(sql,value):
     conn.close()
     return cur
 
+def GetColor(period):
+    colors = ["gray","red","gold","blue","purple","green"]
+    return colors[int(period)-1]
 
 def run_query_withparmstr(sql):
     conn = sqlite3.connect(BasePathM + "dbSTR.db")
@@ -271,7 +274,6 @@ def get_db():
 def awesome():
     db = get_db()
     sqlip = request.args.get('query')
-    print(sqlip)
 
     connt = sqlite3.connect(BasePathM + "dbSTR.db")
     ct = connt.cursor()
@@ -280,7 +282,6 @@ def awesome():
 
     if sqlip[:3] == "ENS":
         the_attrib = "gene_id"
-        print(sqlip)
     else:
         the_attrib = "gene_name"
 
@@ -310,18 +311,24 @@ def awesome():
     df = ct.execute(sql2).fetchall()
     
     df_df = pd.DataFrame.from_records(df)
+    df_df.columns = ["chrom","featuretype","gene.start","gene.end", "strid", "motif", "str.start","str.end","chrom2","period","str.length"]
+    df_df["featuretype"] = "NA" # TODO set
+    df_df["chrom"] = df_df["chrom"].apply(lambda x: x.replace("chr",""))
+    df_df = df_df[["chrom","str.start","str.end","motif","period","str.length","strid","featuretype"]].drop_duplicates().sort_values("str.start")
 
     trace1 = go.Scatter(
-       x = npa.linspace(1,len(df),len(df)),
-       y = df_df[7]
+        x = (df_df["str.start"]+df_df["str.end"])/2,
+        y = [0]*df_df.shape[0],
+        mode="markers",
+        marker=dict(size=10, color=df_df["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
+        text=df_df.apply(lambda x: x["chrom"]+":"+str(x["str.start"]), 1)
     )
+    plotly_data = [trace1]
+    plotly_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder)
 
-    data = [trace1]
-    ids = range(1,len(df),1)
-    mytest = json.dumps(data,cls=plotly.utils.PlotlyJSONEncoder)
-
-    return render_template('view2.html',table=df,
-                           graphJSON=mytest )
+    print(df_df.head())
+    return render_template('view2.html',table=df_df.to_records(index=False),
+                           graphJSON=plotly_json)
 
 #################### Render HTML pages ###############
 @server.route('/')

@@ -20,10 +20,10 @@
 	  <tbody>
 	  {% for d in table %}
 	  <tr>
-	    <td><a href="/dashapp?query={{d[4]}}?chr={{d[8]}}" target="_blank"> {{ d[8] }}:{{ d [6] }}-{{ d[7] }}</a></td>
-	    <td>{{ d[1] }}</td>
-	    <td>{{ d[5] }}</td>
-	    <td>{{'%0.1f' % d[10]|float}}</td>
+	    <td><a href="/dashapp?query={{d[6]}}?chr={{d[0]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
+	    <td>{{ d[7] }}</td>
+	    <td>{{ d[3] }}</td>
+	    <td>{{'%0.1f' % d[5]|float}}</td>
 	    
 	  </tr>
 	  {% endfor %}
