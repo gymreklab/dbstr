@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<!-- Div for the plotly chart -->
+<div id="chart" class="chart"></div>
+<script type="text/javascript">
+  var chrom = {{chrom}};
+  var graphs = {{graphJSON | safe}};
+  var layout = {{layoutJSON | safe}};
+  var strids = {{strids | safe}};
+
+  var myPlot = document.getElementById('chart'),
+    d3 = Plotly.d3,
+    data = graphs,
+    layout=layout;
+
+  Plotly.newPlot('chart', data, layout);
+
+  myPlot.on('plotly_click', function(data){
+    for(var i=0; i < data.points.length; i++){
+        if (data.points[i].curveNumber==1) {
+          url="None";
+        }
+        else {
+          url="/dashapp?query="+strids[data.points[i].pointNumber]+"?chr="+chrom
+        }
+    }
+    if (url != "None") {
+    var win = window.open(url, "_blank");
+    win.focus();
+    }
+});
+</script>
+
+
+<!-- Main table of STRs in this region -->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+      <div id="variants_table_container" style>
+	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
+	  <thead class="tablesorter-header"><th>STR Locus (hg19)</th><th>Motif</th><th># copies (hg19)</th></thead>
+	  <tbody>
+	  {% for d in table %}
+	  <tr>
+	    <td><a href="/dashapp?query={{d[6]}}?chr={{d[0]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
+	    <td>{{ d[3] }}</td>
+	    <td>{{'%0.1f' % d[5]|float}}</td>
+	    
+	  </tr>
+	  {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
