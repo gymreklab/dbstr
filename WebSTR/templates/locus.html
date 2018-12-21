@@ -12,13 +12,14 @@
     <div class="col-md-10 col-md-offset-1">
 
       <h1>{{ chrom }}:{{ start }}-{{ end }}</h1>
-      
-      <div>
+      <br><br>
+      <button class="collapsible">STR sequence</button>
+      <div class="content" style="display:block">
 	<p>
+	  <br><br>
 	  {{ strseq|safe }}
 	</p>
       </div>
-      
       <br><br>
       <button class="collapsible">Expression STRs</button>
       <div class="content" style="display:block">
@@ -36,18 +37,53 @@
 	    {% endfor %}
 	  </tbody>
 	</table>
+	See the <a href="/about">about page</a> for detailed description of each parameter.
       </div>
       <br><br>
       <button class="collapsible">Mutation and constraint</button>
       <div class="content" style="display:block">
-	<p>TODO</p>
+	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
+	  <thead class="tablesorter-header"><th>Parameter</th><th>Value</th></thead>
+	  <tbody>
+	    <tr>
+	      <td><b>Mutation model: Mutation rate</b></td>
+	      <td>{{ '%.2e' % mut_data[0]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Mutation model: Beta</b></td>
+	      <td>{{ '%.3f' % mut_data[1]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Mutation model: P(single step)</b></td>
+	      <td>{{ '%.3f' % mut_data[2]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Constraint (Z-score 1)</b></td>
+	      <td>{{ '%.3f' % mut_data[6]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Stutter model: up</b></td>
+	      <td>{{ '%.3f' % mut_data[3]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Stutter model: down</b></td>
+	      <td>{{ '%.3f' % mut_data[4]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Stutter model: p</b></td>
+	      <td>{{ '%.3f' % mut_data[5]|float }}</td>
+	    </tr>
+	  </tbody>
+	</table>
+	See the <a href="/about">about page</a> for detailed description of each parameter.
       </div>
       <br><br>
       <button class="collapsible">STR Imputation</button>
       <div class="content" style="display:block">
 	<p>TODO</p>
+	See the <a href="/about">about page</a> for detailed description of each parameter.
       </div>
-      
+      <br><br><br><br>
     </div>
   </div>
 </div>

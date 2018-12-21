@@ -68,8 +68,17 @@ def locusview():
     str_query = request.args.get('STRID')
     chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
     gtex_data = GetGTExInfo(str_query, DbSTRPath)
+    mut_data = GetMutInfo(str_query, DbSTRPath)
+    imp_data = GetImputationInfo(str_query, DbSTRPath)
+    if len(mut_data) != 1: mut_data = None
+    else:
+        mut_data = list(mut_data[0])
+        mut_data[0] = 10**mut_data[0]
+    if len(imp_data) != 1: imp_data = None
+    else:
+        imp_data = list(imp_data[0])
     return render_template('locus.html', chrom=chrom, start=start, end=end, strseq=seq,
-                           estr=gtex_data)
+                           estr=gtex_data, mut_data=mut_data, imp_data=imp_data)
 
 #################### Render HTML pages ###############
 @server.route('/')
