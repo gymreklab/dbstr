@@ -15,12 +15,14 @@ import json
 from textwrap import dedent as d
 import os
 
+from locus_view_dash import *
 from locus_view import *
 from region_view import *
 
 #################### Database paths ###############
 BasePath = "/storage/resources/dbase/dbSTR/SS1/"
 DbSTRPath = "/storage/resources/dbase/dbSTR/"
+RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
 
 #################### Set up flask server ###############
 server = Flask(__name__)
@@ -44,6 +46,7 @@ def main_getdata(user_selection): return getdata(user_selection, BasePath)
 @app.callback(Output('Main-graphic','figure'),
               [Input('table2','rows')])
 def main_update_figure(rows): return update_figure(rows)
+
 #################### Render region page ###############
 
 @server.route('/awesome')
@@ -58,6 +61,15 @@ def awesome():
                                strids=list(region_data["strid"]))
     else:
         return render_template('view2_nolocus.html')
+
+reffa = pyfaidx.Fasta(RefFaPath)
+@server.route('/locus')
+def locusview():
+    str_query = request.args.get('STRID')
+    chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
+    gtex_data = GetGTExInfo(str_query, DbSTRPath)
+    return render_template('locus.html', chrom=chrom, start=start, end=end, strseq=seq,
+                           estr=gtex_data)
 
 #################### Render HTML pages ###############
 @server.route('/')

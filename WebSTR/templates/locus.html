@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<!-- Div for the plotly chart -->
+<div id="chart" class="chart"></div>
+<script type="text/javascript">
+</script>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+
+      <h1>{{ chrom }}:{{ start }}-{{ end }}</h1>
+      
+      <div>
+	<p>
+	  {{ strseq|safe }}
+	</p>
+      </div>
+      
+      <br><br>
+      <button class="collapsible">Expression STRs</button>
+      <div class="content" style="display:block">
+	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
+	  <thead class="tablesorter-header"><th>Gene (ENS)</th><th>Tissue</th><th>Beta</th><th>P-value</th><th>CAVIAR</th></thead>
+	  <tbody>
+	    {% for d in estr %}
+	    <tr>
+	      <td>{{ d[1] }} ({{ d[0] }})</td>
+	      <td>{{ d[2] }}</td>
+	      <td>{{ '%0.2f' % d[3]|float }}</td>
+	      <td>{{ '%0.2e' % d[5]|float }}</td>
+	      <td>{{ '%0.2f' % d[5]|float }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+      <br><br>
+      <button class="collapsible">Mutation and constraint</button>
+      <div class="content" style="display:block">
+	<p>TODO</p>
+      </div>
+      <br><br>
+      <button class="collapsible">STR Imputation</button>
+      <div class="content" style="display:block">
+	<p>TODO</p>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    <script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
+
+{% endblock %}

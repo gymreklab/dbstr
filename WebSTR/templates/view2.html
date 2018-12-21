@@ -23,7 +23,7 @@
           url="None";
         }
         else {
-          url="/dashapp?query="+strids[data.points[i].pointNumber]+"?chr="+chrom
+          url="/locus?STRID="+strids[data.points[i].pointNumber]
         }
     }
     if (url != "None") {
@@ -44,7 +44,7 @@
 	  <tbody>
 	  {% for d in table %}
 	  <tr>
-	    <td><a href="/dashapp?query={{d[6]}}?chr={{d[0]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
+	    <td><a href="/locus?STRID={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
 	    <td>{{ d[3] }}</td>
 	    <td>{{'%0.1f' % d[5]|float}}</td>
 	    
