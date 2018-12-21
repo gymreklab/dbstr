@@ -11,7 +11,8 @@
   <div class="row">
     <div class="col-md-10 col-md-offset-1">
 
-      <h1>{{ chrom }}:{{ start }}-{{ end }}</h1>
+      <h1>chr{{ chrom }}:{{ start }}-{{ end }}</h1>
+      <font size="4">Population allele frequencies for <a href="dashapp?query={{ strid }}?chrom={{ chrom }}" target="_blank" >chr{{ chrom }}:{{ start }}-{{ end }}</a></font>
       <br><br>
       <button class="collapsible">STR sequence</button>
       <div class="content" style="display:block">
@@ -22,7 +23,7 @@
       </div>
       <br><br>
       <button class="collapsible">Expression STRs</button>
-      <div class="content" style="display:block">
+      <div class="content" style="display:none">
 	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
 	  <thead class="tablesorter-header"><th>Gene (ENS)</th><th>Tissue</th><th>Beta</th><th>P-value</th><th>CAVIAR</th></thead>
 	  <tbody>
@@ -41,7 +42,7 @@
       </div>
       <br><br>
       <button class="collapsible">Mutation and constraint</button>
-      <div class="content" style="display:block">
+      <div class="content" style="display:none">
 	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
 	  <thead class="tablesorter-header"><th>Parameter</th><th>Value</th></thead>
 	  <tbody>
@@ -58,7 +59,7 @@
 	      <td>{{ '%.3f' % mut_data[2]|float }}</td>
 	    </tr>
 	    <tr>
-	      <td><b>Constraint (Z-score 1)</b></td>
+	      <td><b>Constraint (Z-score)</b></td>
 	      <td>{{ '%.3f' % mut_data[6]|float }}</td>
 	    </tr>
 	    <tr>
@@ -79,8 +80,58 @@
       </div>
       <br><br>
       <button class="collapsible">STR Imputation</button>
-      <div class="content" style="display:block">
-	<p>TODO</p>
+      <div class="content" style="display:none">
+	<h4>Locus-level imputation metrics</h4>
+	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
+	  <thead class="tablesorter-header"><th>Parameter</th><th>Value</th></thead>
+	  <tbody>
+	    <tr>
+	      <td><b>SSC - Concordance</b></td>
+	      <td>{{ '%.2f' % imp_data[0]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>SSC - r</b></td>
+	      <td>{{ '%.2f' % imp_data[1]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>1000 (EUR) - Concordance</b></td>
+	      <td>{{ '%.2f' % imp_data[2]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>1000G (EUR) - r</b></td>
+	      <td>{{ '%.2f' % imp_data[3]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>1000 (AFR) - Concordance</b></td>
+	      <td>{{ '%.2f' % imp_data[4]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>1000G (AFR) - r</b></td>
+	      <td>{{ '%.2f' % imp_data[5]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>1000 (EAS) - Concordance</b></td>
+	      <td>{{ '%.2f' % imp_data[6]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>1000G (EAS) - r</b></td>
+	      <td>{{ '%.2f' % imp_data[7]|float }}</td>
+	    </tr>
+	  </tbody>
+	</table>
+	<h4>Allele-level imputation metrics </h4>
+	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
+	  <thead class="tablesorter-header"><th>Allele (bp diff from hg19)</th><th>r2</th><th>P-val</th></thead>
+	  <tbody>
+	    {% for d in imp_allele_data %}
+	    <tr>
+	      <td>{{ d[0] }}</td>
+	      <td>{{ '%0.2f' % d[1]|float }}</td>
+	      <td>{{ '%0.3e' % d[2]|float }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
 	See the <a href="/about">about page</a> for detailed description of each parameter.
       </div>
       <br><br><br><br>

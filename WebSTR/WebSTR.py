@@ -70,6 +70,7 @@ def locusview():
     gtex_data = GetGTExInfo(str_query, DbSTRPath)
     mut_data = GetMutInfo(str_query, DbSTRPath)
     imp_data = GetImputationInfo(str_query, DbSTRPath)
+    imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
     if len(mut_data) != 1: mut_data = None
     else:
         mut_data = list(mut_data[0])
@@ -77,8 +78,10 @@ def locusview():
     if len(imp_data) != 1: imp_data = None
     else:
         imp_data = list(imp_data[0])
-    return render_template('locus.html', chrom=chrom, start=start, end=end, strseq=seq,
-                           estr=gtex_data, mut_data=mut_data, imp_data=imp_data)
+    return render_template('locus.html', strid=str_query,
+                           chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
+                           estr=gtex_data, mut_data=mut_data,
+                           imp_data=imp_data, imp_allele_data=imp_allele_data)
 
 #################### Render HTML pages ###############
 @server.route('/')
