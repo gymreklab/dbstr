@@ -67,6 +67,7 @@ Default Theme
 	border-bottom: #ccc 1px solid;
 	padding: 4px;
 	vertical-align: top;
+        width: auto;
 }
 
 /* hovered row colors */
@@ -187,3 +188,48 @@ caption {
 	cursor: pointer;
 	background-color: #e6bf99;
 }
+
+/* buttons */
+collapsible {
+  color: #fff;
+  font-family: 'Open Sans', Arial;
+  background-color: #2d96cd;
+  border-radius: 5px;
+  text-decoration: none;
+  width: 275px;
+  padding: 15px 20px;
+  text-align: center;
+  font-size: 1.3em;
+  text-transform: uppercase;  
+  display: block;
+  margin: 10% auto 5%;
+  transition: background-color 500ms ease-in-out;
+  position: relative;
+  border: none;
+}
+
+collapsible::after {
+  content: '';
+  position: relative;
+  width: 1em;
+  height: 1em;
+  border-right: .1em solid #fff;
+  border-bottom: .1em solid #fff;
+  transform: rotate(-45deg);
+  top: 3px;
+  display: inline-block;
+  margin-left: 1em;
+}
+
+collapsible:hover, collapsible:focus {
+  color: #fff;
+  background-color: #1b394e;
+  text-decoration: none;
+}
+
+collapsible:hover::after, collapsible:focus::after {
+  transform: rotate(-405deg);
+  transition: transform 1s ease-in-out;
+  position: relative;
+}
+
