@@ -86,7 +86,7 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
         #legend=dict(orientation="h"),
         shapes=gene_shapes,
         xaxis=dict(
-            title="Position (chr%s)"%chrom +  "<br> Motif length: 1 gray, 2 red , 3 gold, 4 blue, 5 purple, 6 green" ,
+            title="Position (chr%s)"%chrom +  "<br> <b> Motif length:</b> 1 gray, 2 red , 3 gold, 4 blue, 5 purple, 6 green" ,
             autorange=True,
             showgrid=False,
             zeroline=False,
@@ -102,7 +102,14 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
             ticks='',
             showticklabels=False
         )
+        #annotations = [dict( text= "Setting the Custom Title Position",
+        #                    showarrow = False,
+        #                    x = 0,
+        #                    y = -2,
+        #                    font = dict(size=10)
+        #)]
     )
+
     plotly_plot_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder) 
     plotly_layout_json = json.dumps(plotly_layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json, plotly_layout_json
