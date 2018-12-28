@@ -86,7 +86,7 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
         #legend=dict(orientation="h"),
         shapes=gene_shapes,
         xaxis=dict(
-            title="Position (chr%s)"%chrom +  "<br> <b> Motif length:</b> 1 gray, 2 red , 3 gold, 4 blue, 5 purple, 6 green" ,
+            title="Position (chr%s)"%chrom ,
             autorange=True,
             showgrid=False,
             zeroline=False,
