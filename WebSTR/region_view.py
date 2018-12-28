@@ -80,7 +80,7 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
 
     plotly_data = [trace1, gene_trace]
     plotly_layout= go.Layout(
-        height=250+50*numgenes,
+        height=300+50*numgenes,
         hovermode= 'closest',
         showlegend= False,
         #legend=dict(orientation="h"),
@@ -179,10 +179,10 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
             shapes.append(shape)
     trace = go.Scatter(
         x = gene_starts,
-        y = [(i+1) for i in range(len(genes))],
+        y = [(i+1+exon_width) for i in range(len(genes))],
         mode = "text",
         hoverinfo="none",
-        textposition='middle left',
+        textposition='middle right',
         text = [GetGeneText(genes[i], gene_strands[i]) for i in range(len(genes))],
         textfont=dict(
             family='sans serif',
