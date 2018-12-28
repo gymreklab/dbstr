@@ -78,6 +78,9 @@ def locusview():
     if len(imp_data) != 1: imp_data = None
     else:
         imp_data = list(imp_data[0])
+
+    if len(gtex_data) == 0: gtex_data = None
+    if len(imp_allele_data) == 0: imp_allele_data = None
     return render_template('locus.html', strid=str_query,
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
                            estr=gtex_data, mut_data=mut_data,

@@ -5,6 +5,13 @@
 <!-- Div for the plotly chart -->
 <div id="chart" class="chart"></div>
 <script type="text/javascript">
+$('button').collapse({
+    toggle: false
+  }).on('show',function (e) {
+        $(e.target).parent().find(".icon-chevron-down").removeClass("icon-chevron-down").addClass("icon-chevron-up");
+      }).on('hide', function (e) {
+        $(e.target).parent().find(".icon-chevron-up").removeClass("icon-chevron-up").addClass("icon-chevron-down");
+      });
 </script>
 
 <div class="container-fluid">
@@ -24,7 +31,10 @@
       <br><br>
       <button class="collapsible">Expression STRs</button>
       <div class="content" style="display:none">
-	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
+          {% if estr == None %}
+          <p> No Data Available. </p>
+          {% else %}
+	<table border="1" cellpadding="5" cellspacing="5" class="tablesorter tablesorter-default">
 	  <thead class="tablesorter-header"><th>Gene (ENS)</th><th>Tissue</th><th>Beta</th><th>P-value</th><th>CAVIAR</th></thead>
 	  <tbody>
 	    {% for d in estr %}
@@ -38,12 +48,16 @@
 	    {% endfor %}
 	  </tbody>
 	</table>
+        {% endif %}
 	See the <a href="/about">about page</a> for detailed description of each parameter.
       </div>
       <br><br>
       <button class="collapsible">Mutation and constraint</button>
       <div class="content" style="display:none">
-	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
+         {% if mut_data == None %}
+          <p> No Data Available. </p>
+          {% else %}
+	<table border="1" cellpadding="5" cellspacing="5" class="tablesorter tablesorter-default">
 	  <thead class="tablesorter-header"><th>Parameter</th><th>Value</th></thead>
 	  <tbody>
 	    <tr>
@@ -76,12 +90,16 @@
 	    </tr>
 	  </tbody>
 	</table>
+        {% endif %}
 	See the <a href="/about">about page</a> for detailed description of each parameter.
       </div>
       <br><br>
       <button class="collapsible">STR Imputation</button>
       <div class="content" style="display:none">
 	<h4>Locus-level imputation metrics</h4>
+        {% if imp_data  == None %}
+          <p> No Data Available. </p>
+          {% else %}
 	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
 	  <thead class="tablesorter-header"><th>Parameter</th><th>Value</th></thead>
 	  <tbody>
@@ -119,7 +137,11 @@
 	    </tr>
 	  </tbody>
 	</table>
+        {% endif %}
 	<h4>Allele-level imputation metrics </h4>
+        {% if imp_data  == None %}
+          <p> No Data Available. </p>
+          {% else %}
 	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
 	  <thead class="tablesorter-header"><th>Allele (bp diff from hg19)</th><th>r2</th><th>P-val</th></thead>
 	  <tbody>
@@ -131,7 +153,8 @@
 	    </tr>
 	    {% endfor %}
 	  </tbody>
-	</table>
+	</table>a
+        {% endif %}
 	See the <a href="/about">about page</a> for detailed description of each parameter.
       </div>
       <br><br><br><br>

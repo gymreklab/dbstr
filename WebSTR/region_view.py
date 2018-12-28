@@ -72,6 +72,7 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
         marker=dict(size=10, color=region_data["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
         text=region_data.apply(lambda x: x["chrom"]+":"+str(x["str.start"]) + " ("+x["motif"]+")", 1),
         hoverinfo='text'
+        #name=str(region_data["period"].unique())
     )
 
     # Draw gene info
@@ -82,9 +83,10 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
         height=250+50*numgenes,
         hovermode= 'closest',
         showlegend= False,
+        #legend=dict(orientation="h"),
         shapes=gene_shapes,
         xaxis=dict(
-            title="Position (chr%s)"%chrom,
+            title="Position (chr%s)"%chrom +  "<br> Motif length: 1 gray, 2 red , 3 gold, 4 blue, 5 purple, 6 green" ,
             autorange=True,
             showgrid=False,
             zeroline=False,
