@@ -5,9 +5,9 @@ WebSTR database application
 """
 
 import argparse
-import dash
+#import dash
 from flask import Flask, redirect, render_template, request, session, url_for
-from dash.dependencies import Output, Input, State
+#from dash.dependencies import Output, Input, State
 from collections import deque
 import pandas as pd
 import numpy as npa
@@ -16,7 +16,7 @@ from textwrap import dedent as d
 import sys
 import os
 
-from locus_view_dash import *
+#from locus_view_dash import *
 from locus_view import *
 from region_view import *
 
@@ -39,23 +39,23 @@ server = Flask(__name__)
 server.secret_key = 'dbSTR' 
 
 #################### Render locus page ###############
-app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
-app.config['suppress_callback_exceptions']=True
-SetupDashApp(app)
+#app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
+#app.config['suppress_callback_exceptions']=True
+#SetupDashApp(app)
 
-@app.callback(dash.dependencies.Output('field-dropdown','value'),
-              [dash.dependencies.Input('url', 'href')])
-def main_display_page(href): return display_page(href)
+#@app.callback(dash.dependencies.Output('field-dropdown','value'),
+#              [dash.dependencies.Input('url', 'href')])
+#def main_display_page(href): return display_page(href)
 
-@app.callback(Output('table2', 'rows'), [Input('field-dropdown', 'value')])
-def main_update_table(user_selection): return update_table(user_selection, BasePath)
+#@app.callback(Output('table2', 'rows'), [Input('field-dropdown', 'value')])
+#def main_update_table(user_selection): return update_table(user_selection, BasePath)
 
-@app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
-def main_getdata(user_selection): return getdata(user_selection, BasePath)
+#@app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
+#def main_getdata(user_selection): return getdata(user_selection, BasePath)
 
-@app.callback(Output('Main-graphic','figure'),
-              [Input('table2','rows')])
-def main_update_figure(rows): return update_figure(rows)
+#@app.callback(Output('Main-graphic','figure'),
+#              [Input('table2','rows')])
+#def main_update_figure(rows): return update_figure(rows)
 
 #################### Render region page ###############
 
