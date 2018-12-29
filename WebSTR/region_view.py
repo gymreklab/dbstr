@@ -14,6 +14,7 @@ def GetRegionData(region_query, DbSTRPath):
         the_attrib = "gene_name"
         if region_query[:3] == "ENS":
             the_attrib = "gene_id"
+            region_query = region_query.split(".")[0]
         else: 
             the_attrib = "gene_name"
         gene_query = ("select fe.seqid,min(fe.start),max(fe.end)"
@@ -124,7 +125,7 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
     colpos = region_query.find(":")
     if colpos < 0: # search is by gene
         if region_query[:3] == "ENS":
-            gene_query = ("select at.value from newattrib at where at.id='{}' and at.attrib='gene_name'").format(region_query)
+            gene_query = ("select at.value from newattrib at where at.id='{}' and at.attrib='gene_name'").format(region_query.split(".")[0])
             gene_df = ct.execute(gene_query).fetchall()
             genes = [item[0] for item in gene_df]
         else:
