@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as npa
 import json
 from textwrap import dedent as d
+import sys
 import os
 
 from locus_view_dash import *
@@ -20,9 +21,18 @@ from locus_view import *
 from region_view import *
 
 #################### Database paths ###############
-BasePath = "/storage/resources/dbase/dbSTR/SS1/"
-DbSTRPath = "/storage/resources/dbase/dbSTR/"
-RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
+PLATFORM = "snorlax" # or AWS
+if PLATFORM == "snorlax":
+    BasePath = "/storage/resources/dbase/dbSTR/SS1/"
+    DbSTRPath = "/storage/resources/dbase/dbSTR/"
+    RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
+elif PLATFORM == "AWS":
+    BasePath = ""
+    DbSTRPath = ""
+    RefFaPath = "" # TODO
+else:
+    sys.stderr.write("Could not locate database files\n")
+    sys.exit(1)
 
 #################### Set up flask server ###############
 server = Flask(__name__)

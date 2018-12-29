@@ -34,7 +34,8 @@ setup(name=NAME,
           'WebSTR = WebSTR.WebSTR:main',
         ],
       },
-      install_requires=['flask','dash','pandas','plotly'],
+      install_requires=['argparse', 'flask','dash','pandas','plotly',\
+                        'numpy', 'json', 'textwrap'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.4',\
                        'License :: OSI Approved :: MIT License',\
