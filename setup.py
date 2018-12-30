@@ -35,7 +35,9 @@ setup(name=NAME,
         ],
       },
       install_requires=['argparse', 'flask','dash','pandas','plotly',\
-                        'numpy', 'json', 'textwrap'],
+                        'numpy', 'pyfaidx',
+                        'dash_core_components', 'dash_html_components',\
+                        'dash_table_experiments'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.4',\
                        'License :: OSI Approved :: MIT License',\

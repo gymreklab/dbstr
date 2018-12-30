@@ -23,7 +23,7 @@ from region_view import *
 #################### Database paths ###############
 PLATFORM = "snorlax" # or AWS
 if PLATFORM == "snorlax":
-    BasePath = "/storage/resources/dbase/dbSTR/SS1/"
+    BasePath = "/storage/resources/dbase/dbSTR/SS1/" # TODO this is allele freq. not used now
     DbSTRPath = "/storage/resources/dbase/dbSTR/"
     RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
 elif PLATFORM == "AWS":
