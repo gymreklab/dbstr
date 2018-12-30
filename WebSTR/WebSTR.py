@@ -12,7 +12,7 @@ from collections import deque
 import pandas as pd
 import numpy as npa
 import json
-from textwrap import dedent as d
+#from textwrap import dedent as d
 import sys
 import os
 
@@ -21,15 +21,15 @@ from locus_view import *
 from region_view import *
 
 #################### Database paths ###############
-PLATFORM = "snorlax" # or AWS
+PLATFORM = "AWS" # or AWS
 if PLATFORM == "snorlax":
     BasePath = "/storage/resources/dbase/dbSTR/SS1/"
     DbSTRPath = "/storage/resources/dbase/dbSTR/"
     RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
 elif PLATFORM == "AWS":
-    BasePath = ""
-    DbSTRPath = ""
-    RefFaPath = "" # TODO
+    DbSTRPath = "/var/cache/objectivefs/dbstr"
+    RefFaPath = os.path.join(DbSTRPath, "hg19.fa")
+    BasePath = "" # TODO not used now
 else:
     sys.stderr.write("Could not locate database files\n")
     sys.exit(1)
