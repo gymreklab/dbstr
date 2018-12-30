@@ -27,7 +27,7 @@ if PLATFORM == "snorlax":
     DbSTRPath = "/storage/resources/dbase/dbSTR/"
     RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
 elif PLATFORM == "AWS":
-    DbSTRPath = "/var/cache/objectivefs/dbstr"
+    DbSTRPath = "/var/cache/objectivefs/dbstr/"
     RefFaPath = os.path.join(DbSTRPath, "hg19.fa")
     BasePath = "" # TODO not used now
 else:
