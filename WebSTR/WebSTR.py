@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 WebSTR database application
-
 """
 
 import argparse

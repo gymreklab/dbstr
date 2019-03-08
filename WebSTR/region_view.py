@@ -96,7 +96,7 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
             tickformat = '.0f'
         ),
         yaxis=dict(
-            autorange=True,
+            fixedrange=True,
             showgrid=False,
             zeroline=False,
             showline=False,
