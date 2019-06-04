@@ -62,12 +62,16 @@ def main_update_figure(rows): return update_figure(rows)
 def awesome():
     region_query = request.args.get('query')
     region_data = GetRegionData(region_query, DbSTRPath)
+    strs_id = region_data.strid.unique()
+    H_data = GetHCalc(strs_id,DbSTRPath)
+    H_data2 = pd.DataFrame.from_records(H_data)
+    Regions_data = pd.merge(region_data, H_data2, left_on='strid', right_on = 0)
     if region_data.shape[0] > 0:
-        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(region_data, region_query, DbSTRPath)
-        return render_template('view2.html',table=region_data.to_records(index=False),
+        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
+        return render_template('view2.html',table=Regions_data.to_records(index=False),
                                graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
                                chrom=region_data["chrom"].values[0].replace("chr",""),
-                               strids=list(region_data["strid"]))
+                               strids=list(Regions_data["strid"]))
     else:
         return render_template('view2_nolocus.html')
 
@@ -80,6 +84,7 @@ def locusview():
     mut_data = GetMutInfo(str_query, DbSTRPath)
     imp_data = GetImputationInfo(str_query, DbSTRPath)
     imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
+    freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
     if len(mut_data) != 1: mut_data = None
     else:
         mut_data = list(mut_data[0])
@@ -90,10 +95,13 @@ def locusview():
 
     if len(gtex_data) == 0: gtex_data = None
     if len(imp_allele_data) == 0: imp_allele_data = None
-    return render_template('locus.html', strid=str_query,
+    if len(freq_dist) > 0:
+        plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON(freq_dist)
+        return render_template('locus.html', strid=str_query,
+                           graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
                            estr=gtex_data, mut_data=mut_data,
-                           imp_data=imp_data, imp_allele_data=imp_allele_data)
+                           imp_data=imp_data, imp_allele_data=imp_allele_data,freq_dist=freq_dist)
 
 #################### Render HTML pages ###############
 @server.route('/')

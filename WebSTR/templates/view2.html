@@ -62,13 +62,14 @@ mark.green {
       <p> <b> Motif length:</b> <mark class="gray"> 1: gray, <mark class="red"> 2: red , <mark class="gold"> 3: gold, <mark class="blue"> 4: blue, <mark class="purple"> 5: purple, <mark class="green"> 6: green </p>
       <div id="variants_table_container" style>
 	<table border="1" cellpadding="5" cellspacing="5" class="tableshorter tablesorter-default">
-	  <thead class="tablesorter-header"><th>STR Locus (hg19)</th><th>Motif</th><th># copies (hg19)</th></thead>
+	  <thead class="tablesorter-header"><th>STR Locus (hg19)</th><th>Motif</th><th># copies (hg19)</th><th> H value</th></thead>
 	  <tbody>
 	  {% for d in table %}
 	  <tr>
 	    <td><a href="/locus?STRID={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
 	    <td>{{ d[3] }}</td>
 	    <td>{{'%0.1f' % d[5]|float}}</td>
+            <td>{{ d[9] }}</td>
 	    
 	  </tr>
 	  {% endfor %}

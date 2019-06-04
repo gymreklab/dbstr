@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import numpy as np
 import plotly
 import plotly.graph_objs as go
 from dbutils import *
@@ -26,6 +27,7 @@ def GetRegionData(region_query, DbSTRPath):
             start = None
             end = None
         else:
+            print(gene_df)
             chrom = "chr"+gene_df[0][0].replace("chr","")
             start = int(gene_df[0][1])
             end = int(gene_df[0][2])
@@ -40,7 +42,7 @@ def GetRegionData(region_query, DbSTRPath):
             if (end-start)>MAXREGIONSIZE:
                 chrom, start, end = None, None, None
         except:
-            chrom, start, end = None, None, None
+            chrom, start, end = None,None, None
     if chrom is not None:
         region_query = ("select str.chrom,str.strid,str.motif,str.start,str.end,str.period,str.length"
                         " from"
@@ -50,6 +52,7 @@ def GetRegionData(region_query, DbSTRPath):
         if len(df) == 0: return pd.DataFrame({})
         df_df = pd.DataFrame.from_records(df)
         df_df.columns = ["chrom","strid", "motif", "str.start","str.end","period","str.length"] 
+        H_query = GetHCalc(df_df.strid.unique(),DbSTRPath)
         df_df["featuretype"] = "NA"
         df_df["chrom"] = df_df["chrom"].apply(lambda x: x.replace("chr",""))
         df_df["str.length"] = df_df["str.length"].round(2)
@@ -57,6 +60,36 @@ def GetRegionData(region_query, DbSTRPath):
         df_df.drop_duplicates(inplace=True)
     else: df_df = pd.DataFrame({})
     return df_df
+
+def GetHCalc(strid,DbSTRPath):
+    ct = connect_db(DbSTRPath).cursor()
+    stridt = tuple(strid)
+    gquery = (" select str_id, group_concat(name || ';' || H,':') Hvals from"
+              " (select name,str_id,round(1-sum(fi*fi),1) H"
+              " from"
+              " (select cohort_id,str_id,copies,sum(cast(nvals as FLOAT)/cast(totvals as FLOAT)) as fi"
+              " from"
+              " (select af.cohort_id, af.str_id, (end-start+1+af.length)/period copies,sum(nvals) nvals, tvals.totvals from"
+              " allelefreq af,"
+              " strlocmotif strm,"
+              " (select cohort_id,str_id,sum(nvals) totvals"
+              " from allelefreq"
+              " where str_id in {} "
+              " group by str_id,cohort_id"
+              " order by str_id,cohort_id) tvals"
+              " where af.str_id = strm.strid"
+              " and af.str_id in {} "
+              " and af.str_id = tvals.str_id"
+              " and af.cohort_id = tvals.cohort_id"
+              " group by af.cohort_id, af.str_id, copies)"
+              " group by cohort_id,str_id,copies) sum1,"
+              " COHORTS co"
+              " where sum1.cohort_id = co.cohort_id"
+              " group by str_id , name ) group by str_id").format(stridt,stridt)
+    df = ct.execute(gquery).fetchall()
+    return df
+
+
 
 def GetColor(period):
     colors = ["gray","red","gold","blue","purple","green"]
@@ -78,7 +111,6 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
 
     # Draw gene info
     gene_trace, gene_shapes, numgenes = GetGeneShapes(region_data, region_query, DbSTRPath)
-
     plotly_data = [trace1, gene_trace]
     plotly_layout= go.Layout(
         height=300+50*numgenes,
@@ -103,17 +135,64 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
             ticks='',
             showticklabels=False
         )
-        #annotations = [dict( text= "Setting the Custom Title Position",
-        #                    showarrow = False,
-        #                    x = 0,
-        #                    y = -2,
-        #                    font = dict(size=10)
-        #)]
     )
 
     plotly_plot_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder) 
     plotly_layout_json = json.dumps(plotly_layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json, plotly_layout_json
+
+def make_bar_trace(X, Cohort):
+    return go.Bar(
+        x=X['b'],
+        y=X['c'],
+        name=Cohort)
+
+
+
+def GetFreqPlotlyJSON(freq_dist):
+    data1 = pd.DataFrame(np.array(freq_dist).reshape(-1,3), columns = list("abc"))
+    print(data1)
+    cohort, ppx, ppy = zip(*freq_dist)
+    data=[
+        go.Bar(
+            x=ppx,
+            y=ppy
+        )
+    ]
+
+    #for Cohort, X in data1.groupby('a'):
+
+    #    data.append(
+    #        make_bar_trace(X,Cohort)
+    #    )
+    #title = "Count Freqeuncy by Cohort"
+    #x_title = "Count"
+    #y_title = "Freq"
+
+    #layout = go.Layout(
+    #    title=title,             # set plot title
+    #    xaxis=dict(
+    #        axis_style,      # add axis style dictionary
+    #        title=x_title,   # x-axis title
+    #    ),
+    #    yaxis=dict(
+    #        axis_style,      # add axis style dictionary
+    #        title=y_title,   # y-axis title
+    #    )
+    #)
+    layout = go.Layout(
+        xaxis=dict(
+            title="Count")
+        )
+
+    #fig = tools.make_subplots(rows=1, cols=4)
+
+    #fig.append_trace(trace1, 1, 1)
+    #fig.append_trace(trace2, 1, 2)
+
+    plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+    plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
+    return plotly_plot_json_datab, plotly_plot_json_layoutb
 
 exon_width = 0.3
 gene_width = 0.03
@@ -134,7 +213,8 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
         chrom = "chr"+region_query.split(":")[0].replace("chr","")
         start = int(region_query.split(":")[1].split("-")[0])
         end = int(region_query.split(":")[1].split("-")[1])
-        gene_query = ("select at.value from features fe, newattrib at where fe.seqid='{}' and fe.start>={} and fe.end<={} and fe.id=at.id and at.attrib='gene_name'").format(chrom, start, end)
+        #gene_query = ("select at.value from features fe, newattrib at where fe.seqid='{}' and fe.start>={} and fe.end<={} and fe.id=at.id and at.attrib='gene_name'").format(chrom, start, end)
+        gene_query = ("select value from newattrib where attrib = 'gene_name' and id in (select id from features where  seqid='{}' and start>={} and end<={} group by id) ").format(chrom, start, end)
         gene_df = ct.execute(gene_query).fetchall()
         genes = list(set([item[0] for item in gene_df]))
     shapes = []
@@ -143,7 +223,6 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
     gene_ends = []
     gene_strands = []
     # Then, for each gene get features 
-    print(genes)
     for i in range(len(genes)):
         gene = genes[i]
         feature_query = ("select fe.id,fe.start,fe.end,fe.strand from features fe, newattrib at where at.attrib='gene_name' and at.value='{}' and fe.id=at.id").format(gene)

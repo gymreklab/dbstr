@@ -3,7 +3,6 @@
 {% block body %}
 
 <!-- Div for the plotly chart -->
-<div id="chart" class="chart"></div>
 <script type="text/javascript">
 $('button').collapse({
     toggle: false
@@ -29,6 +28,15 @@ $('button').collapse({
 	</p>
       </div>
       <br><br>
+      <!-- Div for the plotly chart -->
+        <button class="collapsible">Allele Frequency</button>
+	<div id="barchart" class="chart"></div>
+    <script type="text/javascript">
+        var graphsx = {{graphJSONx | safe}};
+        var graphslayoutx = {{graphlayoutx | safe}};
+            Plotly.plot('barchart',graphsx,graphslayoutx);
+    </script>
+     <br><br>
       <button class="collapsible">Expression STRs</button>
       <div class="content" style="display:none">
           {% if estr == None %}
