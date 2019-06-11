@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly
 import plotly.graph_objs as go
+import re
 from dbutils import *
 
 MAXREGIONSIZE = 1000000
@@ -61,6 +62,36 @@ def GetRegionData(region_query, DbSTRPath):
     else: df_df = pd.DataFrame({})
     return df_df
 
+def GetHvalSeqHTML(df):
+    df2 = pd.DataFrame(np.array(df).reshape(-1,2), columns= list("TR"))
+    t1 = df2["R"].str.split(pat=":",n= -1, expand = True)
+    df2['ret'] = None
+    nrows =t1.shape[0]
+    delim = [', ',';']
+    for i in range(nrows):
+        ret = ''
+        t2ta = df2.iloc[i]
+        t2 = t2ta["R"].split(":")
+        for j in range(len(t2)):
+            t2t = t1.iloc[i,j]
+            t2=re.split(r'(?:' + '|'.join(delim) + r')', t2t )
+            t2num = float(t2[1])
+            if t2num == 0.0: 
+                thecolor = "gray"
+            elif t2num <= 0.1:
+                thecolor = "lightblue"
+            elif t2num <= 0.5:
+                thecolor = "navy"
+            else:
+                thecolor = "red"
+            ret += '<font size="2" color="black">' + t2[0] + '</font>'
+            ret += '<font size="2" color="' + thecolor + '"> ' + t2[1] + ';</font>'
+        df2.iloc[i,2] = ret
+    df2.columns = ["str_id","Hvals","Hhtml"]
+    return df2            
+
+
+
 def GetHCalc(strid,DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
     stridt = tuple(strid)
@@ -87,7 +118,8 @@ def GetHCalc(strid,DbSTRPath):
               " where sum1.cohort_id = co.cohort_id"
               " group by str_id , name ) group by str_id").format(stridt,stridt)
     df = ct.execute(gquery).fetchall()
-    return df
+    df2 = GetHvalSeqHTML(df)
+    return df2
 
 
 
@@ -147,7 +179,85 @@ def make_bar_trace(X, Cohort):
         y=X['c'],
         name=Cohort)
 
+def GetFreqPlotlyJSON2(freq_dist):
+    data1 = pd.DataFrame(np.array(freq_dist).reshape(-1,3), columns = list("abc"))
+    minx = min(data1['b'])-1
+    maxx = max(data1['b'])+1
+    x1=data1.loc[data1['a'] == 1]
+    x2=data1.loc[data1['a'] == 2]
+    x3=data1.loc[data1['a'] == 3]
+    x4=data1.loc[data1['a'] == 4]
+    
+    #for Cohort, X in data1.groupby('a'):
+    trace1 = go.Bar(
+        x=x1['b'],
+        y=x1['c']
+    )
 
+    trace2 = go.Bar(
+        x=x2['b'],
+        y=x2['c'],
+        xaxis='x2',
+        yaxis='y2'
+    )
+
+    trace3 = go.Bar(
+        x=x3['b'],
+        y=x3['c'],
+        xaxis='x3',
+        yaxis='y3'
+    )
+
+    trace4 = go.Bar(
+        x=x4['b'],
+        y=x4['c'],
+        xaxis='x4',
+        yaxis='y4'
+    )
+
+    data = [trace1, trace2, trace3, trace4]
+
+    layout = go.Layout(
+        showlegend=False,
+        xaxis=dict(
+            domain=[0, 0.24],
+            title="Gtex",
+            range=[minx, maxx]
+        ),
+        yaxis=dict(
+            title="Count"
+        ),
+        xaxis2=dict(
+            domain=[0.26, 0.5],
+            anchor='y2',
+            title="1000 Genomes Africa",
+            range=[minx, maxx]
+        ),
+        yaxis2=dict(
+            anchor='x2'
+        ),
+        xaxis3=dict(
+            domain=[0.51, 0.75],
+            anchor='y3',
+            title="1000 Genomes East Asia",
+            range=[minx, maxx]
+        ),
+        yaxis3=dict(
+            anchor='x3'
+        ),
+        xaxis4=dict(
+            domain=[0.76, 1],
+            anchor='y4',
+            title="1000 Genomes Europe",
+            range=[minx, maxx]
+        ),
+        yaxis4=dict(
+            anchor='x4'
+        ))
+
+    plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+    plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
+    return plotly_plot_json_datab, plotly_plot_json_layoutb
 
 def GetFreqPlotlyJSON(freq_dist):
     data1 = pd.DataFrame(np.array(freq_dist).reshape(-1,3), columns = list("abc"))
@@ -160,35 +270,11 @@ def GetFreqPlotlyJSON(freq_dist):
         )
     ]
 
-    #for Cohort, X in data1.groupby('a'):
 
-    #    data.append(
-    #        make_bar_trace(X,Cohort)
-    #    )
-    #title = "Count Freqeuncy by Cohort"
-    #x_title = "Count"
-    #y_title = "Freq"
-
-    #layout = go.Layout(
-    #    title=title,             # set plot title
-    #    xaxis=dict(
-    #        axis_style,      # add axis style dictionary
-    #        title=x_title,   # x-axis title
-    #    ),
-    #    yaxis=dict(
-    #        axis_style,      # add axis style dictionary
-    #        title=y_title,   # y-axis title
-    #    )
-    #)
     layout = go.Layout(
         xaxis=dict(
             title="Count")
         )
-
-    #fig = tools.make_subplots(rows=1, cols=4)
-
-    #fig.append_trace(trace1, 1, 1)
-    #fig.append_trace(trace2, 1, 2)
 
     plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
     plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)

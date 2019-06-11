@@ -64,8 +64,7 @@ def awesome():
     region_data = GetRegionData(region_query, DbSTRPath)
     strs_id = region_data.strid.unique()
     H_data = GetHCalc(strs_id,DbSTRPath)
-    H_data2 = pd.DataFrame.from_records(H_data)
-    Regions_data = pd.merge(region_data, H_data2, left_on='strid', right_on = 0)
+    Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
     if region_data.shape[0] > 0:
         plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
         return render_template('view2.html',table=Regions_data.to_records(index=False),
@@ -96,7 +95,7 @@ def locusview():
     if len(gtex_data) == 0: gtex_data = None
     if len(imp_allele_data) == 0: imp_allele_data = None
     if len(freq_dist) > 0:
-        plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON(freq_dist)
+        plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
         return render_template('locus.html', strid=str_query,
                            graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
