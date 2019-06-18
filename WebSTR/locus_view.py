@@ -73,31 +73,6 @@ def GetFreqSTRInfo(strid,DbSTRPath):
     df = ct.execute(gquery).fetchall()
     return df
 
-def GetHCalcSingle(strid,DbSTRPath):
-    ct = connect_db(DbSTRPath).cursor()
-    gquery = ("select name,round(1-sum(fi*fi),1) H"
-              " from"
-              " (select cohort_id,copies,sum(cast(nvals as FLOAT)/cast(totvals as FLOAT)) as fi"
-              " from"
-              " (select af.cohort_id, (end-start+1+af.length)/period copies,sum(nvals) nvals, tvals.totvals from"
-              " allelefreq af,"
-              " strlocmotif strm,"
-              " (select cohort_id,str_id,sum(nvals) totvals"
-              " from allelefreq"
-              " where str_id = '{}' "
-              " group by cohort_id) tvals"
-              " where af.str_id = strm.strid"
-              " and af.str_id = '{}'"
-              " and af.str_id = tvals.str_id"
-              " and af.cohort_id = tvals.cohort_id" 
-              " group by af.cohort_id, copies)"
-              " group by cohort_id,copies) sum1,"
-              " COHORTS co"
-              " where sum1.cohort_id = co.cohort_id"
-              " group by name").format(strid,strid)
-    df = ct.execute(gquery).fetchall()
-    return df
-
 def GetImputationAlleleInfo(strid, DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
     gquery = ("select al.allele, al.r2, al.pval"

@@ -28,7 +28,6 @@ def GetRegionData(region_query, DbSTRPath):
             start = None
             end = None
         else:
-            print(gene_df)
             chrom = "chr"+gene_df[0][0].replace("chr","")
             start = int(gene_df[0][1])
             end = int(gene_df[0][2])
@@ -53,7 +52,6 @@ def GetRegionData(region_query, DbSTRPath):
         if len(df) == 0: return pd.DataFrame({})
         df_df = pd.DataFrame.from_records(df)
         df_df.columns = ["chrom","strid", "motif", "str.start","str.end","period","str.length"] 
-        H_query = GetHCalc(df_df.strid.unique(),DbSTRPath)
         df_df["featuretype"] = "NA"
         df_df["chrom"] = df_df["chrom"].apply(lambda x: x.replace("chr",""))
         df_df["str.length"] = df_df["str.length"].round(2)
@@ -62,14 +60,14 @@ def GetRegionData(region_query, DbSTRPath):
     else: df_df = pd.DataFrame({})
     return df_df
 
-def GetHvalSeqHTML(df):
+def GetHvalSeqHTML2(df):
     df2 = pd.DataFrame(np.array(df).reshape(-1,2), columns= list("TR"))
     t1 = df2["R"].str.split(pat=":",n= -1, expand = True)
     df2['ret'] = None
     nrows =t1.shape[0]
     delim = [', ',';']
     for i in range(nrows):
-        ret = ''
+        ret = '<h5>'
         t2ta = df2.iloc[i]
         t2 = t2ta["R"].split(":")
         for j in range(len(t2)):
@@ -77,15 +75,20 @@ def GetHvalSeqHTML(df):
             t2=re.split(r'(?:' + '|'.join(delim) + r')', t2t )
             t2num = float(t2[1])
             if t2num == 0.0: 
-                thecolor = "gray"
+                #thecolor = "gray"
+                thecolor = "label-default"
             elif t2num <= 0.1:
-                thecolor = "lightblue"
+                #thecolor = "blue"
+                thecolor = "label-info"
             elif t2num <= 0.5:
-                thecolor = "navy"
+                #thecolor = "navy"
+                thecolor = "label-primary"
             else:
-                thecolor = "red"
-            ret += '<font size="2" color="black">' + t2[0] + '</font>'
-            ret += '<font size="2" color="' + thecolor + '"> ' + t2[1] + ';</font>'
+                thecolor = "label-danger"
+            #ret += '<font size="2" color="black">' + t2[0] + '</font>'
+            ret += '<span class="label ' + thecolor + '">' + t2[0] + t2[1] + '</span>'
+            #ret += '<font size="2" color="' + thecolor + '"> ' + t2[1] + ';</font>'
+        ret += '</h5>'
         df2.iloc[i,2] = ret
     df2.columns = ["str_id","Hvals","Hhtml"]
     return df2            
@@ -118,7 +121,7 @@ def GetHCalc(strid,DbSTRPath):
               " where sum1.cohort_id = co.cohort_id"
               " group by str_id , name ) group by str_id").format(stridt,stridt)
     df = ct.execute(gquery).fetchall()
-    df2 = GetHvalSeqHTML(df)
+    df2 = GetHvalSeqHTML2(df)
     return df2
 
 
