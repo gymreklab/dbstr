@@ -85,9 +85,8 @@ def GetHvalSeqHTML2(df):
                 thecolor = "label-primary"
             else:
                 thecolor = "label-danger"
-            #ret += '<font size="2" color="black">' + t2[0] + '</font>'
-            ret += '<span class="label ' + thecolor + '">' + t2[0] + t2[1] + '</span>'
-            #ret += '<font size="2" color="' + thecolor + '"> ' + t2[1] + ';</font>'
+            ret += '<span class="label ' + thecolor + '">' + t2[0] + ':' + t2[1] + '</span>'
+            ret += '&nbsp;'
         ret += '</h5>'
         df2.iloc[i,2] = ret
     df2.columns = ["str_id","Hvals","Hhtml"]
