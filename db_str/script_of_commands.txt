@@ -32,5 +32,27 @@ annot text,
 attrib text,
 value text);
 
+create table COHORTS(
+name text,
+cohort_id integer,
+Active text,
+Desc text);
+
+INSERT INTO COHORTS(name,cohort_id,Active,Desc)
+VALUES ('gtex',1,'Y','Gtex Data')
+INSERT INTO COHORTS VALUES ('1kg-afr',2,'Y','1000 Genomes Africa');
+INSERT INTO COHORTS VALUES ('1kg-eas',3,'Y','1000 Genomes East Asia');
+INSERT INTO COHORTS VALUES ('1kg-eur',4,'Y','1000 Genomes Europe');
+
+CREATE TABLE allelefreq (
+cohort_id integer not null,
+str_id text not null,
+allele text,
+length integer,
+nvals integer
+);
+CREATE INDEX freq_str_id_idx on allelefreq(str_id);
+
+
 
 .separator ","

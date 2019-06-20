@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """
 WebSTR database application
-
 """
 
 import argparse
-import dash
+#import dash
 from flask import Flask, redirect, render_template, request, session, url_for
-from dash.dependencies import Output, Input, State
+#from dash.dependencies import Output, Input, State
 from collections import deque
 import pandas as pd
 import numpy as npa
@@ -16,7 +15,7 @@ from textwrap import dedent as d
 import sys
 import os
 
-from locus_view_dash import *
+#from locus_view_dash import *
 from locus_view import *
 from region_view import *
 
@@ -39,23 +38,23 @@ server = Flask(__name__)
 server.secret_key = 'dbSTR' 
 
 #################### Render locus page ###############
-app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
-app.config['suppress_callback_exceptions']=True
-SetupDashApp(app)
-
-@app.callback(dash.dependencies.Output('field-dropdown','value'),
-              [dash.dependencies.Input('url', 'href')])
-def main_display_page(href): return display_page(href)
-
-@app.callback(Output('table2', 'rows'), [Input('field-dropdown', 'value')])
-def main_update_table(user_selection): return update_table(user_selection, BasePath)
-
-@app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
-def main_getdata(user_selection): return getdata(user_selection, BasePath)
-
-@app.callback(Output('Main-graphic','figure'),
-              [Input('table2','rows')])
-def main_update_figure(rows): return update_figure(rows)
+#app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
+#app.config['suppress_callback_exceptions']=True
+#SetupDashApp(app)
+#
+#@app.callback(dash.dependencies.Output('field-dropdown','value'),
+#              [dash.dependencies.Input('url', 'href')])
+#def main_display_page(href): return display_page(href)
+#
+#@app.callback(Output('table2', 'rows'), [Input('field-dropdown', 'value')])
+#def main_update_table(user_selection): return update_table(user_selection, BasePath)
+#
+#@app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
+#def main_getdata(user_selection): return getdata(user_selection, BasePath)
+#
+#@app.callback(Output('Main-graphic','figure'),
+#              [Input('table2','rows')])
+#def main_update_figure(rows): return update_figure(rows)
 
 #################### Render region page ###############
 
@@ -63,12 +62,15 @@ def main_update_figure(rows): return update_figure(rows)
 def awesome():
     region_query = request.args.get('query')
     region_data = GetRegionData(region_query, DbSTRPath)
+    strs_id = region_data.strid.unique()
+    H_data = GetHCalc(strs_id,DbSTRPath)
+    Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
     if region_data.shape[0] > 0:
-        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(region_data, region_query, DbSTRPath)
-        return render_template('view2.html',table=region_data.to_records(index=False),
+        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
+        return render_template('view2.html',table=Regions_data.to_records(index=False),
                                graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
                                chrom=region_data["chrom"].values[0].replace("chr",""),
-                               strids=list(region_data["strid"]))
+                               strids=list(Regions_data["strid"]))
     else:
         return render_template('view2_nolocus.html')
 
@@ -81,6 +83,7 @@ def locusview():
     mut_data = GetMutInfo(str_query, DbSTRPath)
     imp_data = GetImputationInfo(str_query, DbSTRPath)
     imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
+    freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
     if len(mut_data) != 1: mut_data = None
     else:
         mut_data = list(mut_data[0])
@@ -91,10 +94,13 @@ def locusview():
 
     if len(gtex_data) == 0: gtex_data = None
     if len(imp_allele_data) == 0: imp_allele_data = None
-    return render_template('locus.html', strid=str_query,
+    if len(freq_dist) > 0:
+        plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
+        return render_template('locus.html', strid=str_query,
+                           graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
                            estr=gtex_data, mut_data=mut_data,
-                           imp_data=imp_data, imp_allele_data=imp_allele_data)
+                           imp_data=imp_data, imp_allele_data=imp_allele_data,freq_dist=freq_dist)
 
 #################### Render HTML pages ###############
 @server.route('/')
@@ -122,13 +128,31 @@ def dbSTRDownloads():
 def dbSTRTerms():
     return render_template("terms.html")
 
+@server.route('/url')
+def my_method():
+    try:
+        call_method_that_raises_exception()
+    except Exception as e:
+            render_template("500.html", error= str(e))
+
+@server.errorhandler(404)
+def internal_server_error(error):
+    server.logger.error('Server Error: %s', (error))
+    return render_template('500.htm', emsg = error), 404
+
+@server.errorhandler(Exception)
+def unhandled_exception(e):
+    server.logger.error('Unhandled Exception: %s', (e))
+    return render_template('500.html', emsg = e), 500
+ 
+
 #################### Set up and run the server ###############
 def main():
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument("--host", help="Host to run app", type=str, default="0.0.0.0")
     parser.add_argument("--port", help="Port to run app", type=int, default=5000)
     args = parser.parse_args()
-    server.run(debug=True, host=args.host, port=args.port)
+    server.run(debug=False, host=args.host, port=args.port)
 
 if __name__ == '__main__':
     main()

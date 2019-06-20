@@ -62,8 +62,17 @@ def GetImputationInfo(strid, DbSTRPath):
     df = ct.execute(gquery).fetchall()
     return df
 
-#elect * from *allelstat* limit 5;
-# str_id|locus1|locus2|allele|freq_het|MAF|KL|r2|pval
+def GetFreqSTRInfo(strid,DbSTRPath):
+    ct = connect_db(DbSTRPath).cursor()
+    gquery = ("select cohort_id, (end-start+1+af.length)/period copies,sum(nvals) nvals from"
+              " allelefreq af,"
+              " strlocmotif strm"
+              " where af.str_id = strm.strid"
+              " and str_id = '{}' "
+              " group by cohort_id, copies").format(strid)
+    df = ct.execute(gquery).fetchall()
+    return df
+
 def GetImputationAlleleInfo(strid, DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
     gquery = ("select al.allele, al.r2, al.pval"

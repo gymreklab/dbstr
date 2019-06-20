@@ -1,7 +1,9 @@
 import json
 import pandas as pd
+import numpy as np
 import plotly
 import plotly.graph_objs as go
+import re
 from dbutils import *
 
 MAXREGIONSIZE = 1000000
@@ -40,7 +42,7 @@ def GetRegionData(region_query, DbSTRPath):
             if (end-start)>MAXREGIONSIZE:
                 chrom, start, end = None, None, None
         except:
-            chrom, start, end = None, None, None
+            chrom, start, end = None,None, None
     if chrom is not None:
         region_query = ("select str.chrom,str.strid,str.motif,str.start,str.end,str.period,str.length"
                         " from"
@@ -57,6 +59,71 @@ def GetRegionData(region_query, DbSTRPath):
         df_df.drop_duplicates(inplace=True)
     else: df_df = pd.DataFrame({})
     return df_df
+
+def GetHvalSeqHTML2(df):
+    df2 = pd.DataFrame(np.array(df).reshape(-1,2), columns= list("TR"))
+    t1 = df2["R"].str.split(pat=":",n= -1, expand = True)
+    df2['ret'] = None
+    nrows =t1.shape[0]
+    delim = [', ',';']
+    for i in range(nrows):
+        ret = '<h5>'
+        t2ta = df2.iloc[i]
+        t2 = t2ta["R"].split(":")
+        for j in range(len(t2)):
+            t2t = t1.iloc[i,j]
+            t2=re.split(r'(?:' + '|'.join(delim) + r')', t2t )
+            t2num = float(t2[1])
+            if t2num == 0.0: 
+                #thecolor = "gray"
+                thecolor = "label-default"
+            elif t2num <= 0.1:
+                #thecolor = "blue"
+                thecolor = "label-info"
+            elif t2num <= 0.5:
+                #thecolor = "navy"
+                thecolor = "label-primary"
+            else:
+                thecolor = "label-danger"
+            ret += '<span class="label ' + thecolor + '">' + t2[0] + ':' + t2[1] + '</span>'
+            ret += '&nbsp;'
+        ret += '</h5>'
+        df2.iloc[i,2] = ret
+    df2.columns = ["str_id","Hvals","Hhtml"]
+    return df2            
+
+
+
+def GetHCalc(strid,DbSTRPath):
+    ct = connect_db(DbSTRPath).cursor()
+    stridt = tuple(strid)
+    gquery = (" select str_id, group_concat(name || ';' || H,':') Hvals from"
+              " (select name,str_id,round(1-sum(fi*fi),1) H"
+              " from"
+              " (select cohort_id,str_id,copies,sum(cast(nvals as FLOAT)/cast(totvals as FLOAT)) as fi"
+              " from"
+              " (select af.cohort_id, af.str_id, (end-start+1+af.length)/period copies,sum(nvals) nvals, tvals.totvals from"
+              " allelefreq af,"
+              " strlocmotif strm,"
+              " (select cohort_id,str_id,sum(nvals) totvals"
+              " from allelefreq"
+              " where str_id in {} "
+              " group by str_id,cohort_id"
+              " order by str_id,cohort_id) tvals"
+              " where af.str_id = strm.strid"
+              " and af.str_id in {} "
+              " and af.str_id = tvals.str_id"
+              " and af.cohort_id = tvals.cohort_id"
+              " group by af.cohort_id, af.str_id, copies)"
+              " group by cohort_id,str_id,copies) sum1,"
+              " COHORTS co"
+              " where sum1.cohort_id = co.cohort_id"
+              " group by str_id , name ) group by str_id").format(stridt,stridt)
+    df = ct.execute(gquery).fetchall()
+    df2 = GetHvalSeqHTML2(df)
+    return df2
+
+
 
 def GetColor(period):
     colors = ["gray","red","gold","blue","purple","green"]
@@ -78,7 +145,6 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
 
     # Draw gene info
     gene_trace, gene_shapes, numgenes = GetGeneShapes(region_data, region_query, DbSTRPath)
-
     plotly_data = [trace1, gene_trace]
     plotly_layout= go.Layout(
         height=300+50*numgenes,
@@ -96,24 +162,125 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
             tickformat = '.0f'
         ),
         yaxis=dict(
-            autorange=True,
+            fixedrange=True,
             showgrid=False,
             zeroline=False,
             showline=False,
             ticks='',
             showticklabels=False
         )
-        #annotations = [dict( text= "Setting the Custom Title Position",
-        #                    showarrow = False,
-        #                    x = 0,
-        #                    y = -2,
-        #                    font = dict(size=10)
-        #)]
     )
 
     plotly_plot_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder) 
     plotly_layout_json = json.dumps(plotly_layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json, plotly_layout_json
+
+def make_bar_trace(X, Cohort):
+    return go.Bar(
+        x=X['b'],
+        y=X['c'],
+        name=Cohort)
+
+def GetFreqPlotlyJSON2(freq_dist):
+    data1 = pd.DataFrame(np.array(freq_dist).reshape(-1,3), columns = list("abc"))
+    minx = min(data1['b'])-1
+    maxx = max(data1['b'])+1
+    x1=data1.loc[data1['a'] == 1]
+    x2=data1.loc[data1['a'] == 2]
+    x3=data1.loc[data1['a'] == 3]
+    x4=data1.loc[data1['a'] == 4]
+    
+    #for Cohort, X in data1.groupby('a'):
+    trace1 = go.Bar(
+        x=x1['b'],
+        y=x1['c']
+    )
+
+    trace2 = go.Bar(
+        x=x2['b'],
+        y=x2['c'],
+        xaxis='x2',
+        yaxis='y2'
+    )
+
+    trace3 = go.Bar(
+        x=x3['b'],
+        y=x3['c'],
+        xaxis='x3',
+        yaxis='y3'
+    )
+
+    trace4 = go.Bar(
+        x=x4['b'],
+        y=x4['c'],
+        xaxis='x4',
+        yaxis='y4'
+    )
+
+    data = [trace1, trace2, trace3, trace4]
+
+    layout = go.Layout(
+        showlegend=False,
+        xaxis=dict(
+            domain=[0, 0.24],
+            title="Gtex",
+            range=[minx, maxx]
+        ),
+        yaxis=dict(
+            title="Count"
+        ),
+        xaxis2=dict(
+            domain=[0.26, 0.5],
+            anchor='y2',
+            title="1000 Genomes Africa",
+            range=[minx, maxx]
+        ),
+        yaxis2=dict(
+            anchor='x2'
+        ),
+        xaxis3=dict(
+            domain=[0.51, 0.75],
+            anchor='y3',
+            title="1000 Genomes East Asia",
+            range=[minx, maxx]
+        ),
+        yaxis3=dict(
+            anchor='x3'
+        ),
+        xaxis4=dict(
+            domain=[0.76, 1],
+            anchor='y4',
+            title="1000 Genomes Europe",
+            range=[minx, maxx]
+        ),
+        yaxis4=dict(
+            anchor='x4'
+        ))
+
+    plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+    plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
+    return plotly_plot_json_datab, plotly_plot_json_layoutb
+
+def GetFreqPlotlyJSON(freq_dist):
+    data1 = pd.DataFrame(np.array(freq_dist).reshape(-1,3), columns = list("abc"))
+    print(data1)
+    cohort, ppx, ppy = zip(*freq_dist)
+    data=[
+        go.Bar(
+            x=ppx,
+            y=ppy
+        )
+    ]
+
+
+    layout = go.Layout(
+        xaxis=dict(
+            title="Count")
+        )
+
+    plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+    plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
+    return plotly_plot_json_datab, plotly_plot_json_layoutb
 
 exon_width = 0.3
 gene_width = 0.03
@@ -134,7 +301,8 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
         chrom = "chr"+region_query.split(":")[0].replace("chr","")
         start = int(region_query.split(":")[1].split("-")[0])
         end = int(region_query.split(":")[1].split("-")[1])
-        gene_query = ("select at.value from features fe, newattrib at where fe.seqid='{}' and fe.start>={} and fe.end<={} and fe.id=at.id and at.attrib='gene_name'").format(chrom, start, end)
+        #gene_query = ("select at.value from features fe, newattrib at where fe.seqid='{}' and fe.start>={} and fe.end<={} and fe.id=at.id and at.attrib='gene_name'").format(chrom, start, end)
+        gene_query = ("select value from newattrib where attrib = 'gene_name' and id in (select id from features where  seqid='{}' and start>={} and end<={} group by id) ").format(chrom, start, end)
         gene_df = ct.execute(gene_query).fetchall()
         genes = list(set([item[0] for item in gene_df]))
     shapes = []
@@ -143,7 +311,6 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
     gene_ends = []
     gene_strands = []
     # Then, for each gene get features 
-    print(genes)
     for i in range(len(genes)):
         gene = genes[i]
         feature_query = ("select fe.id,fe.start,fe.end,fe.strand from features fe, newattrib at where at.attrib='gene_name' and at.value='{}' and fe.id=at.id").format(gene)
