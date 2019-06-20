@@ -135,11 +135,6 @@ def my_method():
     except Exception as e:
             render_template("500.html", error= str(e))
 
-@server.errorhandler(500)
-def internal_server_error(error):
-    server.logger.error('Server Error: %s', (error))
-    return render_template('500.htm', emsg = error), 500
-
 @server.errorhandler(404)
 def internal_server_error(error):
     server.logger.error('Server Error: %s', (error))
@@ -148,7 +143,7 @@ def internal_server_error(error):
 @server.errorhandler(Exception)
 def unhandled_exception(e):
     server.logger.error('Unhandled Exception: %s', (e))
-    return render_template('500.htm', emsg = e), 500
+    return render_template('500.html', emsg = e), 500
  
 
 #################### Set up and run the server ###############
