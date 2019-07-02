@@ -12,6 +12,7 @@ def GetRegionData(region_query, DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
     colpos = region_query.find(":")
     genebuf = 0.1 # increase region width by this much
+    #if colpos > 0: # search is a range and we need to return all genes in the range.
     if colpos < 0: # search is by gene
         the_attrib = "gene_name"
         if region_query[:3] == "ENS":
@@ -60,6 +61,48 @@ def GetRegionData(region_query, DbSTRPath):
     else: df_df = pd.DataFrame({})
     return df_df
 
+def createret(thecolor):
+    ret = '<span style=font-size:30px;color:' + thecolor + '>' + '&#183;' + '</span>'
+    return ret
+
+def GetestrHTML(df):
+    df2 = pd.DataFrame(np.array(df))
+    df2['thtml'] = '<h5></h5>'
+    df2.columns = ["str_id","tissue","thtml"]
+    nrows =df2.shape[0]
+    for i in range(nrows):
+        ret = '<h5>'
+        df2t = df2.iloc[i]
+        if (df2t['tissue'].count('Adipose') > 0):
+           ret += createret("brown")
+        if (df2t['tissue'].count('Artery') > 0):
+           ret += createret("red")
+        if (df2t['tissue'].count('Brain') > 0):
+           ret += createret("yellow")
+        if (df2t['tissue'].count('cells') > 0):
+           ret += createret("light blue")
+        if (df2t['tissue'].count('Esophagus') > 0):
+           ret += createret("light brown")
+        if (df2t['tissue'].count('Heart') > 0):
+           ret += createret("purple")
+        if (df2t['tissue'].count('Lung') > 0):
+           ret += createret("light green")
+        if (df2t['tissue'].count('Muscle') > 0):
+           ret += createret("orange")
+        if (df2t['tissue'].count('Skin-Not') > 0):
+           ret += createret("dark blue")
+        if (df2t['tissue'].count('Skin-Sun') > 0):
+           ret += createret("blue")
+        if (df2t['tissue'].count('Thyroid') > 0):
+           ret += createret("green")
+        if (df2t['tissue'].count('WholeBlood') > 0):
+           ret += createret("fuscia")
+        #ret += '<span class="label ' + thecolor + '">' + df2t[0] + ':' + df2t[1] + '</span>'
+        ret += '</h5>'
+        df2.iloc[i,2] = ret
+    df2.columns = ["str_id","tissues","thtml"]
+    return df2
+
 def GetHvalSeqHTML2(df):
     df2 = pd.DataFrame(np.array(df).reshape(-1,2), columns= list("TR"))
     t1 = df2["R"].str.split(pat=":",n= -1, expand = True)
@@ -92,6 +135,17 @@ def GetHvalSeqHTML2(df):
     df2.columns = ["str_id","Hvals","Hhtml"]
     return df2            
 
+def GetestrCalc(strid,DbSTRPath):
+    ct = connect_db(DbSTRPath).cursor()
+    stridt = tuple(strid)
+    gquery = (" select str_id, group_concat(tissue) tissues"
+              " from estr_gtex"
+              " where str_id in {} "
+              " group by str_id"
+              " order by str_id").format(stridt)
+    df = ct.execute(gquery).fetchall()
+    df2 = GetestrHTML(df)
+    return df2
 
 
 def GetHCalc(strid,DbSTRPath):
@@ -130,21 +184,30 @@ def GetColor(period):
     return colors[int(period)-1]
 
 def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
-    chrom = region_data["chrom"].values[0].replace("chr","")
+    
+    # Draw gene info
+    gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end = GetGeneShapes(region_data, region_query, DbSTRPath)
+    region_data2 = region_data
+ 
+    if (max_gene_end) > 0:
+       region_data2 =  GetRegionData(region_data["chrom"].values[0] + ":" + str(min_gene_start) + "-" + str(max_gene_end), DbSTRPath)
+
+    chrom = region_data2["chrom"].values[0].replace("chr","")
 
     # Get points for each STR
     trace1 = go.Scatter(
-        x = (region_data["str.start"]+region_data["str.end"])/2,
-        y = [0]*region_data.shape[0],
+        x = (region_data2["str.start"]+region_data2["str.end"])/2,
+        y = [0]*region_data2.shape[0],
         mode="markers",
-        marker=dict(size=10, color=region_data["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
-        text=region_data.apply(lambda x: x["chrom"]+":"+str(x["str.start"]) + " ("+x["motif"]+")", 1),
+        marker=dict(size=10, color=region_data2["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
+        text=region_data2.apply(lambda x: x["chrom"]+":"+str(x["str.start"]) + " ("+x["motif"]+")", 1),
         hoverinfo='text'
         #name=str(region_data["period"].unique())
     )
 
-    # Draw gene info
-    gene_trace, gene_shapes, numgenes = GetGeneShapes(region_data, region_query, DbSTRPath)
+
+
+
     plotly_data = [trace1, gene_trace]
     plotly_layout= go.Layout(
         height=300+50*numgenes,
@@ -263,7 +326,6 @@ def GetFreqPlotlyJSON2(freq_dist):
 
 def GetFreqPlotlyJSON(freq_dist):
     data1 = pd.DataFrame(np.array(freq_dist).reshape(-1,3), columns = list("abc"))
-    print(data1)
     cohort, ppx, ppy = zip(*freq_dist)
     data=[
         go.Bar(
@@ -287,6 +349,7 @@ gene_width = 0.03
 gene_color = "black"
 def GetGeneShapes(region_data, region_query, DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
+    genebuf = 0.1
     # First, get list of genes in this region
     genes = []
     colpos = region_query.find(":")
@@ -310,6 +373,8 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
     gene_starts = []
     gene_ends = []
     gene_strands = []
+    min_start = 99999999999
+    max_end = 0
     # Then, for each gene get features 
     for i in range(len(genes)):
         gene = genes[i]
@@ -317,7 +382,12 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
         feature_df = ct.execute(feature_query).fetchall()
         if len(feature_df)==0: continue
         gene_start = min([int(item[1]) for item in feature_df])
+        if (gene_start < min_start): min_start = gene_start
         gene_end = max([int(item[2]) for item in feature_df])
+        if (gene_end > max_end): max_end = gene_end
+        buf = int((max_end-min_start)*(genebuf))
+        max_end = max_end + buf
+        min_start = min_start - buf
         gene_starts.append(gene_start)
         gene_ends.append(gene_end)
         gene_strands.append(feature_df[0][3])
@@ -357,7 +427,7 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
             size=20,
             color='black')
     )
-    return trace, shapes, len(genes)
+    return trace, shapes, len(genes), min_start, max_end
 
 def GetGeneText(gene, strand):
     txt = "<i>"

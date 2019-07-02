@@ -64,7 +64,9 @@ def awesome():
     region_data = GetRegionData(region_query, DbSTRPath)
     strs_id = region_data.strid.unique()
     H_data = GetHCalc(strs_id,DbSTRPath)
+    estr_data = GetestrCalc(strs_id,DbSTRPath)
     Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
+    Regions_data = pd.merge(Regions_data, estr_data, left_on='strid', right_on = 'str_id', how ='left')
     if region_data.shape[0] > 0:
         plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
         return render_template('view2.html',table=Regions_data.to_records(index=False),
@@ -152,7 +154,7 @@ def main():
     parser.add_argument("--host", help="Host to run app", type=str, default="0.0.0.0")
     parser.add_argument("--port", help="Port to run app", type=int, default=5000)
     args = parser.parse_args()
-    server.run(debug=False, host=args.host, port=args.port)
+    server.run(debug=True, host=args.host, port=args.port)
 
 if __name__ == '__main__':
     main()
