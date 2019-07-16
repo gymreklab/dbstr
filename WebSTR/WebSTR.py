@@ -67,6 +67,8 @@ def awesome():
     estr_data = GetestrCalc(strs_id,DbSTRPath)
     Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
     Regions_data = pd.merge(Regions_data, estr_data, left_on='strid', right_on = 'str_id', how ='left')
+    Regions_data = Regions_data.replace(np.nan, '', regex=True)
+    print(Regions_data)
     if region_data.shape[0] > 0:
         plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
         return render_template('view2.html',table=Regions_data.to_records(index=False),

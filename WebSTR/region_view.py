@@ -62,16 +62,17 @@ def GetRegionData(region_query, DbSTRPath):
     return df_df
 
 def createret(thecolor):
-    ret = '<span style=font-size:30px;color:' + thecolor + '>' + '&#183;' + '</span>'
+    ret = '<span style=font-size:40px;color:' + thecolor + '>' + '&#183;' + '</span>'
     return ret
 
 def GetestrHTML(df):
     df2 = pd.DataFrame(np.array(df))
-    df2['thtml'] = '<h5></h5>'
+    df2['thtml']='<span>'
     df2.columns = ["str_id","tissue","thtml"]
     nrows =df2.shape[0]
     for i in range(nrows):
-        ret = '<h5>'
+        ret = '<h1><td height="10">'
+        ret = ''
         df2t = df2.iloc[i]
         if (df2t['tissue'].count('Adipose') > 0):
            ret += createret("brown")
@@ -98,8 +99,10 @@ def GetestrHTML(df):
         if (df2t['tissue'].count('WholeBlood') > 0):
            ret += createret("fuscia")
         #ret += '<span class="label ' + thecolor + '">' + df2t[0] + ':' + df2t[1] + '</span>'
-        ret += '</h5>'
+        #ret += '</h1></td>'
+        ret += ''
         df2.iloc[i,2] = ret
+        print(ret)
     df2.columns = ["str_id","tissues","thtml"]
     return df2
 

@@ -42,8 +42,9 @@ def GetSTRInfo(strid, DbSTRPath, reffa):
 
 def GetGTExInfo(strid, DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
-    gquery = ("select estr.gene_id, estr.gene_name, estr.tissue, estr.beta, estr.pval, estr.caviar "
-              "from estr_gtex estr where estr.str_id = '{}' order by estr.gene_name, estr.beta").format(strid)
+    gquery = ("select estr.gene_id, estr.gene_name, tissue, estr.beta, estr.pval, estr.caviar "
+              "from estr_gtex estr "
+              "where estr.str_id = '{}' order by estr.gene_name, estr.beta").format(strid)
     df = ct.execute(gquery).fetchall()
     return df
 
