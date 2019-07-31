@@ -1,5 +1,15 @@
 <!doctype html>
 <head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144177521-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-144177521-1');
+</script>
+
     <title>WebSTR: a population-wide database of short tandem repeat variation in humans</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/typeaheadjs.css') }}">
@@ -89,7 +99,7 @@
 }
 
 .active {
-  background-color: black;
+  background-color: green;
 }
 
 .collapsible:hover {

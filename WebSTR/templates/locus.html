@@ -13,6 +13,24 @@ $('button').collapse({
       });
 </script>
 
+
+<style>
+table {
+  border-collapse: collapse;
+  border: 1px solid black;
+} 
+
+th,td {
+  border: 1px solid black;
+}
+
+table.tables1 {
+  table-layout: fixed;
+  width: 100%;  
+}
+
+</style>
+
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-10 col-md-offset-1">
@@ -42,19 +60,21 @@ $('button').collapse({
           {% if estr == None %}
           <p> No eSTRs found. </p>
           {% else %}
-	<table border="1" cellpadding="5" cellspacing="5" class="tablesorter tablesorter-default">
-	  <thead class="tablesorter-header"><th>Gene (ENS)</th><th>Tissue</th><th>Beta</th><th>P-value</th><th>CAVIAR</th></thead>
-	  <tbody>
+	<table class="tables1" border="1" cellpadding="4" cellspacing="4" style="table-layout: fixed; width: 100%">
+         <colgroup>
+             <col style="width: auto" />
+         </colgroup>
+	  <thead class="tables1"><th>Gene (ENS)</th><th>Tissue</th><th>Beta</th><th>Beta SE</th><th>P-value</th><th>CAVIAR</th></thead>
 	    {% for d in estr %}
 	    <tr>
 	      <td>{{ d[1] }} ({{ d[0] }})</td>
 	      <td>{{ d[2] }}</td>
 	      <td>{{ '%0.2f' % d[3]|float }}</td>
+	      <td>{{ '%0.2f' % d[4]|float }}</td>
 	      <td>{{ '%0.2e' % d[5]|float }}</td>
-	      <td>{{ '%0.2f' % d[5]|float }}</td>
+              <td>{{ '%0.2f' % d[6]|float }}</td>
 	    </tr>
 	    {% endfor %}
-	  </tbody>
 	</table>
         {% endif %}
 	See the <a href="/about">about page</a> for detailed description of each parameter.

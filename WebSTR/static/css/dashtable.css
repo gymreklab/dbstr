@@ -54,13 +54,13 @@
   background-color: #f9f9f9;
 }
 
-.react-grid-Row.row-selected{
- background-color: #DBECFA;
-}
+/*.react-grid-Row.row-selected{*/
+/* background-color: #DBECFA;*/
+/*}*/
 
-.react-grid-Row .row-selected{
- background-color: #DBECFA;
-}
+/*.react-grid-Row .row-selected{*/
+/* background-color: #DBECFA;*/
+/*}*/
 
 /* Toolbar CSS
  *  * Taken from https://github.com/adazzle/react-data-grid/blob/75d1348134ea073ca04a5e634863cd5be062fcdf/themes/react-data-grid-toolbar.css

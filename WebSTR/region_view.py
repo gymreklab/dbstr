@@ -61,48 +61,60 @@ def GetRegionData(region_query, DbSTRPath):
     else: df_df = pd.DataFrame({})
     return df_df
 
-def createret(thecolor):
-    ret = '<span style=font-size:40px;color:' + thecolor + '>' + '&#183;' + '</span>'
+def createret(thecolor,betav,tissue):
+    #ret = '<span style=font-size:40px;color:' + thecolor + '>' + '&#183;' + '</span>'
+    #ret = '<span class="badge" style=background-color:' + thecolor + '>' + str(betav) + '</span>'  + '<span class="tooltiptext">' + tissue + '</span>'
+    ret = '<span class="badge" style=background-color:' + thecolor + '>' + str(betav) + '</span>'     
     return ret
 
 def GetestrHTML(df):
-    df2 = pd.DataFrame(np.array(df))
-    df2['thtml']='<span>'
-    df2.columns = ["str_id","tissue","thtml"]
-    nrows =df2.shape[0]
+    df2 = pd.DataFrame(np.array(df).reshape(-1,2), columns= list("TR"))
+    t1 = df2["R"].str.split(pat=":",n= -1, expand = True)
+    df2['thtml']=None
+    delim = [', ',';']
+    nrows =t1.shape[0]
     for i in range(nrows):
-        ret = '<h1><td height="10">'
-        ret = ''
+        ret = '<h5>'
         df2t = df2.iloc[i]
-        if (df2t['tissue'].count('Adipose') > 0):
-           ret += createret("brown")
-        if (df2t['tissue'].count('Artery') > 0):
-           ret += createret("red")
-        if (df2t['tissue'].count('Brain') > 0):
-           ret += createret("yellow")
-        if (df2t['tissue'].count('cells') > 0):
-           ret += createret("light blue")
-        if (df2t['tissue'].count('Esophagus') > 0):
-           ret += createret("light brown")
-        if (df2t['tissue'].count('Heart') > 0):
-           ret += createret("purple")
-        if (df2t['tissue'].count('Lung') > 0):
-           ret += createret("light green")
-        if (df2t['tissue'].count('Muscle') > 0):
-           ret += createret("orange")
-        if (df2t['tissue'].count('Skin-Not') > 0):
-           ret += createret("dark blue")
-        if (df2t['tissue'].count('Skin-Sun') > 0):
-           ret += createret("blue")
-        if (df2t['tissue'].count('Thyroid') > 0):
-           ret += createret("green")
-        if (df2t['tissue'].count('WholeBlood') > 0):
-           ret += createret("fuscia")
-        #ret += '<span class="label ' + thecolor + '">' + df2t[0] + ':' + df2t[1] + '</span>'
-        #ret += '</h1></td>'
-        ret += ''
+        t2 = df2t["R"].split(":")
+        for j in range(len(t2)):
+            t2t = t1.iloc[i,j]
+            t2=re.split(r'(?:' + '|'.join(delim) + r')', t2t )
+            t2num = float(t2[1])
+            t2tissue = t2[0]
+            if (t2tissue.count('Adipose') > 0):
+               ret += createret("darkorange",t2num,t2tissue)
+            if (t2tissue.count('Artery-Aorta') > 0):
+               ret += createret("salmon",t2num,t2tissue)
+            if (t2tissue.count('Artery-Tibial') > 0):
+               ret += createret("red",t2num,t2tissue)
+            if (t2tissue.count('Brain-Caud') > 0):
+               ret += createret("lemonchiffon",t2num,t2tissue)
+            if (t2tissue.count('Brain-Cere') > 0):
+               ret += createret("yellow",t2num,t2tissue)
+            if (t2tissue.count('cells') > 0):
+               ret += createret("skyblue",t2num,t2tissue)
+            if (t2tissue.count('Esophagus-Mucosa') > 0):
+               ret += createret("sienna",t2num,t2tissue)
+            if (t2tissue.count('Esophagus-Muscularis') > 0):
+               ret += createret("burlywood",t2num,t2tissue)
+            if (t2tissue.count('Heart') > 0):
+               ret += createret("darkviolet",t2num,t2tissue)
+            if (t2tissue.count('Lung') > 0):
+               ret += createret("greenyellow",t2num,t2tissue)
+            if (t2tissue.count('Muscle') > 0):
+               ret += createret("mediumslateblue",t2num,t2tissue)
+            if (t2tissue.count('Skin-Not') > 0):
+               ret += createret("blue",t2num,t2tissue)
+            if (t2tissue.count('Skin-Sun') > 0):
+               ret += createret("cornflowerblue",t2num,t2tissue)
+            if (t2tissue.count('Thyroid') > 0):
+               ret += createret("green",t2num,t2tissue)
+            if (t2tissue.count('WholeBlood') > 0):
+               ret += createret("purple",t2num,t2tissue)
+        ret += '&nbsp;'
+        ret += '</h5>'
         df2.iloc[i,2] = ret
-        print(ret)
     df2.columns = ["str_id","tissues","thtml"]
     return df2
 
@@ -141,19 +153,33 @@ def GetHvalSeqHTML2(df):
 def GetestrCalc(strid,DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
     stridt = tuple(strid)
-    gquery = (" select str_id, group_concat(tissue) tissues"
-              " from estr_gtex"
-              " where str_id in {} "
-              " group by str_id"
-              " order by str_id").format(stridt)
+    x1 = stridt
+    if len(stridt) == 1: x1 = "('" + ''.join(stridt) + "')"
+    stridt= x1
+    gquery = ("select strid str_id, group_concat(tissue || ';' || round(beta,1),':') tissues "
+              "from estr_gtex2 estr, "
+              "tissues ti, "
+              "strlocmotif str "
+              "where estr.chrom = str.chrom "
+              "and estr.strstart = str.start "
+              "and estr.strend = str.end "
+              "and estr.signif = 'True' "
+              "and estr.tissue_cd = ti.tissue_cd "
+              "and strid in {} group by strid ").format(stridt)
     df = ct.execute(gquery).fetchall()
-    df2 = GetestrHTML(df)
+    if len(df) > 0:
+        df2 = GetestrHTML(df)
+    else:
+        df2 = pd.DataFrame(columns = ["str_id","tissues","thtml"])
     return df2
 
 
 def GetHCalc(strid,DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
     stridt = tuple(strid)
+    x1 = stridt
+    if len(stridt) == 1: x1 = "('" + ''.join(stridt) + "')"
+    stridt= x1
     gquery = (" select str_id, group_concat(name || ';' || H,':') Hvals from"
               " (select name,str_id,round(1-sum(fi*fi),1) H"
               " from"
@@ -164,11 +190,11 @@ def GetHCalc(strid,DbSTRPath):
               " strlocmotif strm,"
               " (select cohort_id,str_id,sum(nvals) totvals"
               " from allelefreq"
-              " where str_id in {} "
+              " where str_id in  {} "
               " group by str_id,cohort_id"
               " order by str_id,cohort_id) tvals"
               " where af.str_id = strm.strid"
-              " and af.str_id in {} "
+              " and af.str_id in  {} "
               " and af.str_id = tvals.str_id"
               " and af.cohort_id = tvals.cohort_id"
               " group by af.cohort_id, af.str_id, copies)"
@@ -205,7 +231,6 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
         marker=dict(size=10, color=region_data2["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
         text=region_data2.apply(lambda x: x["chrom"]+":"+str(x["str.start"]) + " ("+x["motif"]+")", 1),
         hoverinfo='text'
-        #name=str(region_data["period"].unique())
     )
 
 

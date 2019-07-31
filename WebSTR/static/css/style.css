@@ -102,10 +102,6 @@
   left: 0;
 }
 
-.table_hover {
-    background-color: #b5f7ff !important;
-}
-
 .hoverTable{
        width:100%;
        border-collapse:collapse;
@@ -114,25 +110,11 @@
                 padding:7px; border:#4e95f4 1px solid;
 }
         /* Define the default color for all the table rows */
-.hoverTable tr{
-       background: #b8d1f3;
-}
-        /* Define the hover highlight color for the table row */
-.hoverTable tr:hover {
-       background-color: #00ff00;
-}
 
 th.allele_frequency_column {
     width: 150px;
 }
 
-tr:hover {
-    background-color: #000;
-}
-
-tr:hover td {
-    background-color: #00ff00; /* or #000 */
-}
 
 thead th:nth-child(1) {
   width: 30%;
@@ -147,11 +129,11 @@ thead th:nth-child(3) {
 }
 
 thead th:nth-child(4) {
-  width: 35%;
+  width: 25%;
 }
 
 th, td {
-  padding: 20px;
+  padding: 10px;
 }
 
 /* tooltips - based on http://cbracco.me/a-simple-css-tooltip/ */
@@ -209,6 +191,10 @@ th, td {
     font-size: 0;
     line-height: 0;
 }
+
+
+.tg td{ width:100px }
+
 
 /* Show tooltip content on hover */
 [data-tooltip]:hover:before,
