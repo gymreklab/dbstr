@@ -2,15 +2,22 @@
 {% block body %}
     <div class="container" style="font-size: 16px;">
       <div class="row">
-	  <h1>Downloads</h1>
-      WebSTR data is taken directly from these sources:
+	<h1>Downloads</h1>
+<ul>
+  <li>eSTR data is based on <a href="https://drive.google.com/file/d/1eJ9Ae-4RO7kcCETmev31u3HQKCz4BpnL/view?usp=sharing">Supplementary Dataset 1</a> of Fotsing et al.</li>
+  <li>Full eSTR summary statistic data: <a href="https://drive.google.com/file/d/1iqgSWJZbylVbonQ5EfWYLCn9V1CLgX5h/view?usp=sharing">eSTRGtex_DatasetS2.tar.gz</a></li>
+</ul>
+
+	  <h1>Data sources</h1>
+      WebSTR data is additionally taken directly from these sources:
 <ul>
   <li>HipSTR hg19 reference STR regions available from the HipSTR github page <a href="https://github.com/HipSTR-Tool/HipSTR-references/blob/master/human/hg19.hipstr_reference.bed.gz">hg19.hipstr_reference.bed.gz</a></li>
   <li>Gene annotations use GENCODE version 19 (Ensembl 74) available in the file genocde.gtf.gz obtained from the <a href="http://broadinstitute.org/~konradk/exac_browser/exac_browser.tar.gz">ExAC data download</a></li>
-  <li>eSTRs from Supplementary Dataset 1 of Fotsing et al. 2018 available from <a href="https://www.biorxiv.org/content/early/2018/12/13/495226">biorXiv</a></li>
   <li>Imputation metrics from Supplementary Tables 1 and 2 of <a href="https://www.nature.com/articles/s41467-018-06694-0">Saini et al 2018</a></li>
   <li>Mutation rate and constraint information from Gymrek et al. 2017 available for download from <a href="https://s3-us-west-2.amazonaws.com/strconstraint/Gymrek_etal_SupplementalData1_v2.bed.gz">s3://strconstraint/Gymrek_etal_SupplementalData1_v2.bed.gz</a></li>
 </ul>
+
+
 </div>
     </div>
 {% endblock %}
