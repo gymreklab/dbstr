@@ -31,6 +31,11 @@
     win.focus();
     }
 });
+
+$(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip(); 
+});
+
 </script>
 <style>
 mark.red {
@@ -53,6 +58,7 @@ mark.green {
     background: white;}
 
 </style>
+
 <div id="plotLegend" class="plotfooter"></div>
 
 <!-- Main table of STRs in this region -->
@@ -62,7 +68,7 @@ mark.green {
       <p> <b> Motif length:</b> <mark class="gray"> 1: gray, <mark class="red"> 2: red , <mark class="gold"> 3: gold, <mark class="blue"> 4: blue, <mark class="purple"> 5: purple, <mark class="green"> 6: green </p>
       <div id="variants_table_container" style>
 	<table border="1" cellpadding="5" cellspacing="5" class="table table-bordered">
-	  <thead class="tablesorter-header"><th>STR Locus (hg19)</th><th>Motif</th><th># copies (hg19)</th><th> Heterozygosity</th> <th> estr Tissues</th></thead>
+	  <thead class="tablesorter-header"><th>STR Locus (hg19)</th><th>Motif</th><th># copies (hg19)</th><th> eSTRs (FDR<0.1) </th> <th> Heterozygosity</th></thead>
 	  <tbody>
 	  {% for d in table %}
 	  <tr>

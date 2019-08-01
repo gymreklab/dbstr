@@ -64,7 +64,7 @@ def GetRegionData(region_query, DbSTRPath):
 def createret(thecolor,betav,tissue):
     #ret = '<span style=font-size:40px;color:' + thecolor + '>' + '&#183;' + '</span>'
     #ret = '<span class="badge" style=background-color:' + thecolor + '>' + str(betav) + '</span>'  + '<span class="tooltiptext">' + tissue + '</span>'
-    ret = '<span class="badge" style=background-color:' + thecolor + '>' + str(betav) + '</span>'     
+    ret = '<span class="badge" data-toggle="tooltip" title=' + tissue + ' style=background-color:' + thecolor + '>' + str(betav) + '</span>'     
     return ret
 
 def GetestrHTML(df):
@@ -92,7 +92,7 @@ def GetestrHTML(df):
                ret += createret("lemonchiffon",t2num,t2tissue)
             if (t2tissue.count('Brain-Cere') > 0):
                ret += createret("yellow",t2num,t2tissue)
-            if (t2tissue.count('cells') > 0):
+            if (t2tissue.count('Cells') > 0):
                ret += createret("skyblue",t2num,t2tissue)
             if (t2tissue.count('Esophagus-Mucosa') > 0):
                ret += createret("sienna",t2num,t2tissue)
