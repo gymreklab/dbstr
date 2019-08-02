@@ -64,13 +64,12 @@ table.tables1 {
          <colgroup>
              <col style="width: auto" />
          </colgroup>
-	  <thead class="tables1"><th>Gene (ENS)</th><th>Tissue</th><th>Beta</th><th>Beta SE</th><th>P-value</th><th>CAVIAR</th></thead>
+	  <thead class="tables1"><th>Gene (ENS)</th><th>Tissue</th><th>Beta (SE)</th><th>P-value</th><th>CAVIAR</th></thead>
 	    {% for d in estr %}
 	    <tr>
 	      <td>{{ d[1] }} ({{ d[0] }})</td>
 	      <td>{{ d[2] }}</td>
-	      <td>{{ '%0.2f' % d[3]|float }}</td>
-	      <td>{{ '%0.2f' % d[4]|float }}</td>
+	      <td>{{ '%0.2f' % d[3]|float }} ({{ '%0.2f' % d[4]|float }})</td>
 	      <td>{{ '%0.2e' % d[5]|float }}</td>
               <td>{{ '%0.2f' % d[6]|float }}</td>
 	    </tr>
