@@ -61,10 +61,8 @@ def GetRegionData(region_query, DbSTRPath):
     else: df_df = pd.DataFrame({})
     return df_df
 
-def createret(thecolor,betav,tissue):
-    #ret = '<span style=font-size:40px;color:' + thecolor + '>' + '&#183;' + '</span>'
-    #ret = '<span class="badge" style=background-color:' + thecolor + '>' + str(betav) + '</span>'  + '<span class="tooltiptext">' + tissue + '</span>'
-    ret = '<span class="badge" data-toggle="tooltip" title=' + tissue + ' style=background-color:' + thecolor + '>' + str(betav) + '</span>'     
+def createret(thecolor,betav,tissue,gene):
+    ret = '<span class="badge" data-toggle="tooltip" title=' + tissue + '&nbsp' + '(' + gene + ')' + ' style=background-color:' + thecolor + '>' + str(betav) + '</span>'     
     return ret
 
 def GetestrHTML(df):
@@ -82,36 +80,39 @@ def GetestrHTML(df):
             t2=re.split(r'(?:' + '|'.join(delim) + r')', t2t )
             t2num = float(t2[1])
             t2tissue = t2[0]
+            t2gene = t2[2]
             if (t2tissue.count('Adipose') > 0):
-               ret += createret("darkorange",t2num,t2tissue)
+               ret += createret("darkorange",t2num,t2tissue,t2gene)
             if (t2tissue.count('Artery-Aorta') > 0):
-               ret += createret("salmon",t2num,t2tissue)
+               ret += createret("salmon",t2num,t2tissue,t2gene)
             if (t2tissue.count('Artery-Tibial') > 0):
-               ret += createret("red",t2num,t2tissue)
+               ret += createret("red",t2num,t2tissue,t2gene)
             if (t2tissue.count('Brain-Caud') > 0):
-               ret += createret("lemonchiffon",t2num,t2tissue)
+               ret += createret("lemonchiffon",t2num,t2tissue,t2gene)
             if (t2tissue.count('Brain-Cere') > 0):
-               ret += createret("yellow",t2num,t2tissue)
+               ret += createret("yellow",t2num,t2tissue,t2gene)
             if (t2tissue.count('Cells') > 0):
-               ret += createret("skyblue",t2num,t2tissue)
+               ret += createret("skyblue",t2num,t2tissue,t2gene)
             if (t2tissue.count('Esophagus-Mucosa') > 0):
-               ret += createret("sienna",t2num,t2tissue)
+               ret += createret("sienna",t2num,t2tissue,t2gene)
             if (t2tissue.count('Esophagus-Muscularis') > 0):
-               ret += createret("burlywood",t2num,t2tissue)
+               ret += createret("burlywood",t2num,t2tissue,t2gene)
             if (t2tissue.count('Heart') > 0):
-               ret += createret("darkviolet",t2num,t2tissue)
+               ret += createret("darkviolet",t2num,t2tissue,t2gene)
             if (t2tissue.count('Lung') > 0):
-               ret += createret("greenyellow",t2num,t2tissue)
+               ret += createret("greenyellow",t2num,t2tissue,t2gene)
             if (t2tissue.count('Muscle') > 0):
-               ret += createret("mediumslateblue",t2num,t2tissue)
+               ret += createret("mediumslateblue",t2num,t2tissue,t2gene)
+            if (t2tissue.count('Nerve') > 0):
+               ret += createret("gold",t2num,t2tissue,t2gene)
             if (t2tissue.count('Skin-Not') > 0):
-               ret += createret("blue",t2num,t2tissue)
+               ret += createret("blue",t2num,t2tissue,t2gene)
             if (t2tissue.count('Skin-Sun') > 0):
-               ret += createret("cornflowerblue",t2num,t2tissue)
+               ret += createret("cornflowerblue",t2num,t2tissue,t2gene)
             if (t2tissue.count('Thyroid') > 0):
-               ret += createret("green",t2num,t2tissue)
+               ret += createret("green",t2num,t2tissue,t2gene)
             if (t2tissue.count('WholeBlood') > 0):
-               ret += createret("purple",t2num,t2tissue)
+               ret += createret("purple",t2num,t2tissue,t2gene)
         ret += '&nbsp;'
         ret += '</h5>'
         df2.iloc[i,2] = ret
@@ -156,7 +157,7 @@ def GetestrCalc(strid,DbSTRPath):
     x1 = stridt
     if len(stridt) == 1: x1 = "('" + ''.join(stridt) + "')"
     stridt= x1
-    gquery = ("select strid str_id, group_concat(tissue || ';' || round(beta,1),':') tissues "
+    gquery = ("select strid str_id,  group_concat(tissue || ';' || round(beta,1) || ';' || genename, ':') tissues "
               "from estr_gtex2 estr, "
               "tissues ti, "
               "strlocmotif str "
@@ -312,6 +313,9 @@ def GetFreqPlotlyJSON2(freq_dist):
 
     layout = go.Layout(
         showlegend=False,
+        #title=dict(
+        #    text=str(1234)
+        #),
         xaxis=dict(
             domain=[0, 0.24],
             title="Gtex",
