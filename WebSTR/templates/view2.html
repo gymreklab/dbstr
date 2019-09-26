@@ -73,12 +73,19 @@ mark.green {
 	  <tbody>
 	  {% for d in table %}
 	  <tr>
-	    <td><a href="/locus?STRID={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
+            {% set geno = "H" %}
+            {% if d[6][:1] == "G" %}
+                {% set geno = "G" %}
+            {% endif %}
+	    <td><a href="/locus?STRID={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }} {{ geno }}</a></td>
 	    <td>{{ d[3] }}</td>
 	    <td>{{'%0.1f' % d[5]|float}}</td>
+            {% if geno == "H" %}
             <td>{{ d[13] | safe }}</td>
+            {% else %}
+            <td> </td>
+            {% endif %}
             <td>{{ d[10] | safe }}</td>
-	    
 	  </tr>
 	  {% endfor %}
 	  </tbody>
