@@ -20,14 +20,13 @@
  <h1>STRcat Downloads</h1>
 <ul>
 {% for loopcnt in range(1,22) %}
-{% if loopcnt <= 22 %}
 <li>SGDP {{ loopcnt }}<a href=http://bit.ly/SGDP-CHR-{{ loopcnt }} >SGDP_{{ loopcnt }} </a> </li>
 <li>SGDP {{ loopcnt }}<a href=http://bit.ly/SGDP-CHR-{{ loopcnt }}-idx >SGDP_{{ loopcnt }}_idx</a> </li>
-{% else %} 
-<li>SGDP { loopcnt }<a href=http://bit.ly/SGDP-CHR-{ loopcnt } >SGDP_{ loopcnt } </a> </li>
-<li>SGDP { loopcnt }<a href=http://bit.ly/SGDP-CHR-{ loopcnt }-idx >SGDP_{ loopcnt }_idx</a> </li>
-{% endif %}
 {% endfor %}
+<li>SGDP X<a href=http://bit.ly/SGDP-CHR-X >SGDP_X </a> </li>
+<li>SGDP X<a href=http://bit.ly/SGDP-CHR-X-idx >SGDP_X_idx</a> </li>
+<li>SGDP Y<a href=http://bit.ly/SGDP-CHR-Y >SGDP_Y </a> </li>
+<li>SGDP Y<a href=http://bit.ly/SGDP-CHR-Y-idx >SGDP_Y_idx</a> </li>
         <li>hg19_ref <a href="https://drive.google.com/open?id=1FjSAG5qUrErROzmVPyu8ZMyzjcaZMOQd">hg19_ref.tar.gz</a></li>
         <li>expanded hg19 ref <a href="https://drive.google.com/open?id=1daQWWiRI-QZY0kvubPhS-46ORhgV7ZFZ">expanded_hg19_ref.tar.gz</a></li>
         <li>splice STR bed <a href="https://drive.google.com/open?id=1Q51caDrDmifdBoUDZQqvqLPXYxW5SCw9">potential_spliceSTRs.bed.gz</a></li>
