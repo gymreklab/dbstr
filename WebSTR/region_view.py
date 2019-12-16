@@ -87,9 +87,9 @@ def GetestrHTML(df):
                ret += createret("salmon",t2num,t2tissue,t2gene)
             if (t2tissue.count('Artery-Tibial') > 0):
                ret += createret("red",t2num,t2tissue,t2gene)
-            if (t2tissue.count('Brain-Caud') > 0):
+            if (t2tissue.count('Brain_Caud') > 0):
                ret += createret("lemonchiffon",t2num,t2tissue,t2gene)
-            if (t2tissue.count('Brain-Cere') > 0):
+            if (t2tissue.count('Brain_Cere') > 0):
                ret += createret("yellow",t2num,t2tissue,t2gene)
             if (t2tissue.count('Cells') > 0):
                ret += createret("skyblue",t2num,t2tissue,t2gene)
