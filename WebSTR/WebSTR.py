@@ -62,7 +62,6 @@ server.secret_key = 'dbSTR'
 def awesome():
     region_queryOrg = request.args.get('query')
     region_query = region_queryOrg.upper()
-    print(region_query)
     region_data = GetRegionData(region_query, DbSTRPath)
     if region_data.shape[0] > 0:
         strs_id = region_data.strid.unique()

@@ -37,9 +37,12 @@ def GetRegionData(region_query, DbSTRPath):
             end = end+buf
     else:
         try:
-            chrom = "chr"+region_query.split(":")[0].replace("chr","")
-            start = int(region_query.split(":")[1].split("-")[0])
-            end = int(region_query.split(":")[1].split("-")[1])
+            region_query2 = region_query.replace("CHR","")
+            chrom = "chr"+region_query2.split(":")[0].replace("CHR","")
+            print(chrom)
+            #chrom = "chr"+region_query.split(":")[0].replace("chr","")
+            start = int(region_query2.split(":")[1].split("-")[0])
+            end = int(region_query2.split(":")[1].split("-")[1])
             if (end-start)>MAXREGIONSIZE:
                 chrom, start, end = None, None, None
         except:
