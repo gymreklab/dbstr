@@ -51,7 +51,7 @@ def GetRegionData(region_query, DbSTRPath):
         region_query = ("select str.chrom,str.strid,str.motif,str.start,str.end,str.period,str.length"
                         " from"
                         " strlocmotif str"
-                        " where str.chrom = '{}' and str.start >= {} and str.end <= {}").format(chrom, start, end)
+                        " where str.chrom = '{}' and str.end >= {} and str.start <= {}").format(chrom, start, end)
         df = ct.execute(region_query).fetchall()
         if len(df) == 0: return pd.DataFrame({})
         df_df = pd.DataFrame.from_records(df)
