@@ -37,9 +37,12 @@ def GetRegionData(region_query, DbSTRPath):
             end = end+buf
     else:
         try:
-            chrom = "chr"+region_query.split(":")[0].replace("chr","")
-            start = int(region_query.split(":")[1].split("-")[0])
-            end = int(region_query.split(":")[1].split("-")[1])
+            region_query2 = region_query.replace("CHR","")
+            chrom = "chr"+region_query2.split(":")[0].replace("CHR","")
+            print(chrom)
+            #chrom = "chr"+region_query.split(":")[0].replace("chr","")
+            start = int(region_query2.split(":")[1].split("-")[0])
+            end = int(region_query2.split(":")[1].split("-")[1])
             if (end-start)>MAXREGIONSIZE:
                 chrom, start, end = None, None, None
         except:
@@ -48,7 +51,7 @@ def GetRegionData(region_query, DbSTRPath):
         region_query = ("select str.chrom,str.strid,str.motif,str.start,str.end,str.period,str.length"
                         " from"
                         " strlocmotif str"
-                        " where str.chrom = '{}' and str.start >= {} and str.end <= {}").format(chrom, start, end)
+                        " where str.chrom = '{}' and str.end >= {} and str.start <= {}").format(chrom, start, end)
         df = ct.execute(region_query).fetchall()
         if len(df) == 0: return pd.DataFrame({})
         df_df = pd.DataFrame.from_records(df)
@@ -87,9 +90,9 @@ def GetestrHTML(df):
                ret += createret("salmon",t2num,t2tissue,t2gene)
             if (t2tissue.count('Artery-Tibial') > 0):
                ret += createret("red",t2num,t2tissue,t2gene)
-            if (t2tissue.count('Brain-Caud') > 0):
+            if (t2tissue.count('Brain_Caud') > 0):
                ret += createret("lemonchiffon",t2num,t2tissue,t2gene)
-            if (t2tissue.count('Brain-Cere') > 0):
+            if (t2tissue.count('Brain_Cere') > 0):
                ret += createret("yellow",t2num,t2tissue,t2gene)
             if (t2tissue.count('Cells') > 0):
                ret += createret("skyblue",t2num,t2tissue,t2gene)
