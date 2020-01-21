@@ -70,7 +70,7 @@ def awesome():
         Regions_data = pd.merge(Regions_data, estr_data, left_on='strid', right_on = 'str_id', how='left')
         Regions_data = Regions_data.replace(np.nan, '', regex=True)
         plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
-        return render_template('view2.html',table=Regions_data.to_records(index=False),
+        return render_template('region.html',table=Regions_data.to_records(index=False),
                                graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
                                chrom=region_data["chrom"].values[0].replace("chr",""),
                                strids=list(Regions_data["strid"]))

@@ -1,0 +1,12 @@
+[Unit]
+Description=WebSTR website for analysis and discovery of STRs
+After=network.target
+
+[Service]
+User=WebSTRPROD
+WorkingDirectory=/home/WebSTRPROD/dbstr/
+ExecStart=sudo python3 WebSTR.py --port=80 >> logjan62020.txt 2>&1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
