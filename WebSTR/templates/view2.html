@@ -36,6 +36,7 @@ $(document).ready(function(){
   $('[data-toggle="tooltip"]').tooltip(); 
 });
 
+
 </script>
 <style>
 mark.red {
@@ -59,6 +60,14 @@ mark.green {
 
 </style>
 
+<script>
+    InvertHipstr({{ let }})
+{ 
+	return let;
+}
+</script>
+
+
 <div id="plotLegend" class="plotfooter"></div>
 
 <!-- Main table of STRs in this region -->
@@ -67,18 +76,26 @@ mark.green {
     <div class="col-md-10 col-md-offset-1">
       <p> <b> Motif length:</b> <mark class="gray"> 1: gray, <mark class="red"> 2: red , <mark class="gold"> 3: gold, <mark class="blue"> 4: blue, <mark class="purple"> 5: purple, <mark class="green"> 6: green </p>
       <h6> Hover over table column headings to display addtional details </h6>  
+      <input type="submit" value="Hipstr" class="submitButton" onclick=InvertHipstr('H') /><input type="submit" value="GangSTR" class="submitButton" onclick=InvertGangSTR('G') />
         <div id="variants_table_container" style>
 	<table border="1" cellpadding="5" cellspacing="5" class="table table-bordered">
 	  <thead class="tablesorter-header"><th><abbr title="The chromosome, start position, and end position of the STR in the hg19 reference genome"> STR Locus (hg19)</abbr></th><th><abbr title="The motif (repeat unit) of each STR is given in canonical format. The canonical repeat unit is defined as the lexicographically first repeat unit when considering all rotations and strand orientations of the repeat sequence. For example, the canonical repeat unit for the repeat sequence CAGCAGCAGCAG would be AGC."> Motif</th></abbr><th><abbr title="The number of consecutive copies of the repeat motif present in the hg19 reference genome."># copies (hg19)</abbr></th><th><abbr title="eSTRs are STRs whose lengths are linearly associated with expression of nearby genes. Each circle gives the effect size of significant eSTRs identified in the GTEx cohort (Fotsing et al. BiorXiv 2018). Circles are color-coded by tissue. Hover over a circle to see the tissue and target gene of each eSTR. Click on an STR to see more information about eSTR effects.">  eSTRs (FDR<0.1)</abbr>  </th> <th><abbr title="Heterozygosity gives a measure of how polymorphic the STR is. It is computed as 1-(sum of squared frequency of each allele). Values close to 1 indicate highly polymorphic STRs. Values close to 0 indicate an STR that is mostly not variable in the population."> Heterozygosity </abbr></th></thead>
 	  <tbody>
 	  {% for d in table %}
 	  <tr>
-	    <td><a href="/locus?STRID={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
+            {% set geno = "H" %}
+            {% if d[6][:1] == "G" %}
+                {% set geno = "G" %}
+            {% endif %}
+	    <td><a href="/locus?STRID={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }} <sup>{{ geno }}</sup></a></td>
 	    <td>{{ d[3] }}</td>
 	    <td>{{'%0.1f' % d[5]|float}}</td>
+            {% if geno == "H" %}
             <td>{{ d[13] | safe }}</td>
+            {% else %}
+            <td> </td>
+            {% endif %}
             <td>{{ d[10] | safe }}</td>
-	    
 	  </tr>
 	  {% endfor %}
 	  </tbody>
