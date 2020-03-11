@@ -284,7 +284,6 @@ def GetFreqPlotlyJSON2(freq_dist):
     x2=data1.loc[data1['a'] == 2]
     x3=data1.loc[data1['a'] == 3]
     x4=data1.loc[data1['a'] == 4]
-    x5=data1.loc[data1['a'] == 5]   
     #for Cohort, X in data1.groupby('a'):
     trace1 = go.Bar(
         x=x1['b'],
@@ -312,19 +311,12 @@ def GetFreqPlotlyJSON2(freq_dist):
         yaxis='y4'
     )
 
-    trace5 = go.Bar(
-        x=x5['b'],
-        y=x5['c'],
-        xaxis='x5',
-        yaxis='y5'
-    )
-
-    data = [trace1, trace2, trace3, trace4, trace5]
+    data = [trace1, trace2, trace3, trace4]
 
     layout = go.Layout(
         showlegend=False,
         xaxis=dict(
-            domain=[0, 0.19],
+            domain=[0, 0.24],
             title="Gtex",
             range=[minx, maxx]
         ),
@@ -332,7 +324,7 @@ def GetFreqPlotlyJSON2(freq_dist):
             title="Count"
         ),
         xaxis2=dict(
-            domain=[0.2, 0.39],
+            domain=[0.25, 0.49],
             anchor='y2',
             title="1000 Genomes Africa",
             range=[minx, maxx]
@@ -341,7 +333,7 @@ def GetFreqPlotlyJSON2(freq_dist):
             anchor='x2'
         ),
         xaxis3=dict(
-            domain=[0.4, 0.59],
+            domain=[0.50, 0.74],
             anchor='y3',
             title="1000 Genomes East Asia",
             range=[minx, maxx]
@@ -350,22 +342,13 @@ def GetFreqPlotlyJSON2(freq_dist):
             anchor='x3'
         ),
         xaxis4=dict(
-            domain=[0.6, 0.79],
+            domain=[0.75, 1.0],
             anchor='y4',
             title="1000 Genomes Europe",
             range=[minx, maxx]
         ),
         yaxis4=dict(
             anchor='x4'
-        ),
-        xaxis5=dict(
-            domain=[0.8, 1],
-            anchor='y5',
-            title="Simons Simplex Collection",
-            range=[minx, maxx]
-        ),
-        yaxis5=dict(
-            anchor='x5'
         ))
 
     plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)

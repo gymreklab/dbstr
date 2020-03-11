@@ -67,11 +67,11 @@ def awesome():
         strs_id = region_data.strid.unique()
         H_data = GetHCalc(strs_id,DbSTRPath)
         estr_data = GetestrCalc(strs_id,DbSTRPath)
-        Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id', how='left')
+        Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
         Regions_data = pd.merge(Regions_data, estr_data, left_on='strid', right_on = 'str_id', how='left')
         Regions_data = Regions_data.replace(np.nan, '', regex=True)
         plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
-        return render_template('region.html',table=Regions_data.to_records(index=False),
+        return render_template('view2.html',table=Regions_data.to_records(index=False),
                                graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
                                chrom=region_data["chrom"].values[0].replace("chr",""),
                                strids=list(Regions_data["strid"]))
@@ -82,7 +82,6 @@ reffa = pyfaidx.Fasta(RefFaPath)
 @server.route('/locus')
 def locusview():
     str_query = request.args.get('STRID')
-    print(str_query)
     chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
     gtex_data = GetGTExInfo(str_query, DbSTRPath)
     mut_data = GetMutInfo(str_query, DbSTRPath)
@@ -99,10 +98,9 @@ def locusview():
 
     if len(gtex_data) == 0: gtex_data = None
     if len(imp_allele_data) == 0: imp_allele_data = None
-    if len(freq_dist) > 0: plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
-    if len(freq_dist) == 0: plotly_plot_json_datab = None
-    if len(freq_dist) == 0: plotly_plot_json_layoutb = None
-    return render_template('locus.html', strid=str_query,
+    if len(freq_dist) > 0:
+        plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
+        return render_template('locus.html', strid=str_query,
                            graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
                            estr=gtex_data, mut_data=mut_data,
@@ -158,7 +156,7 @@ def main():
     parser.add_argument("--host", help="Host to run app", type=str, default="0.0.0.0")
     parser.add_argument("--port", help="Port to run app", type=int, default=5000)
     args = parser.parse_args()
-    server.run(debug=True, host=args.host, port=args.port)
+    server.run(debug=False, host=args.host, port=args.port)
 
 if __name__ == '__main__':
     main()

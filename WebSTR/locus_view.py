@@ -30,10 +30,9 @@ def GetSTRInfo(strid, DbSTRPath, reffa):
     ct = connect_db(DbSTRPath).cursor()
     squery = ("select str.chrom, str.start, str.end from strlocmotif str where str.strid = '{}'").format(strid)
     df = ct.execute(squery).fetchall()
-    print(df)
     if len(df) == 0: return None, None, None, None
     chrom = df[0][0]
-    start = int(df[0][1]-1)
+    start = int(df[0][1])
     end = int(df[0][2])
     lflank = str(reffa[chrom][start-seqbuf:start]).upper()
     strseq = str(reffa[chrom][start:end]).upper()
@@ -54,7 +53,6 @@ def GetGTExInfo(strid, DbSTRPath):
               "and estr.tissue_cd = ti.tissue_cd "
               "and strid = '{}' order by estr.caviar desc").format(strid)
     df = ct.execute(gquery).fetchall()
-    print(df)
     return df
 
 def GetMutInfo(strid, DbSTRPath):
@@ -62,7 +60,6 @@ def GetMutInfo(strid, DbSTRPath):
     gquery = ("select mut.est_logmu_ml, mut.est_beta_ml, mut.est_pgeom_ml, mut.up, mut.down, mut.p, mut.zscore_1, mut.zscore_2"
               " from mutrates mut where mut.str_id = '{}'").format(strid)
     df = ct.execute(gquery).fetchall()
-    print(df)
     return df
 
 def GetImputationInfo(strid, DbSTRPath):
@@ -71,7 +68,6 @@ def GetImputationInfo(strid, DbSTRPath):
               " imp.wgs_eas_concordance,imp.wgs_eas_r"
               " from locstat imp where imp.str_id = '{}'").format(strid)
     df = ct.execute(gquery).fetchall()
-    print(df)
     return df
 
 def GetFreqSTRInfo(strid,DbSTRPath):
@@ -83,7 +79,6 @@ def GetFreqSTRInfo(strid,DbSTRPath):
               " and str_id = '{}' "
               " group by cohort_id, copies").format(strid)
     df = ct.execute(gquery).fetchall()
-    print(df)
     return df
 
 def GetImputationAlleleInfo(strid, DbSTRPath):
@@ -91,5 +86,4 @@ def GetImputationAlleleInfo(strid, DbSTRPath):
     gquery = ("select al.allele, al.r2, al.pval"
               " from allelstat al where al.str_id = '{}'").format(strid)
     df = ct.execute(gquery).fetchall()
-    print(df)
     return df
