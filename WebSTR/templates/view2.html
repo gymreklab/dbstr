@@ -5,7 +5,7 @@
 <!-- Div for the plotly chart -->
 <div id="chart" class="chart"></div>
 <script type="text/javascript">
-  var chrom = {{chrom}};
+  var chrom = {{chrom | tojson}};
   var graphs = {{graphJSON | safe}};
   var layout = {{layoutJSON | safe}};
   var strids = {{strids | safe}};
