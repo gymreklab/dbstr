@@ -26,8 +26,13 @@
 <li>LobSTR calls on the Simons Genome Diversity Project (SGDP) (<a href="https://www.ncbi.nlm.nih.gov/pubmed/27654912">Mallick et al 2016</a> and <a href="https://www.ncbi.nlm.nih.gov/pubmed/28892063">Gymrek et al 2017</a>)
 <ul>
 {% for loopcnt in range(1,22) %}
+{% if loopcnt == 21 %}
+<li>SGDP chr21 [<a href=http://bit.ly/SGDP21-CHR-21 >VCF</a>]
+[<a href=http://bit.ly/SGDP-CHR-21-idx >index</a>] </li>
+{% else %}
 <li>SGDP chr{{ loopcnt }} [<a href=http://bit.ly/SGDP-CHR-{{ loopcnt }} >VCF</a>]
 [<a href=http://bit.ly/SGDP-CHR-{{ loopcnt }}-idx >index</a>] </li>
+{% endif %}
 {% endfor %}
 <li>SGDP chrX [<a href=http://bit.ly/SGDP-CHR-X >VCF</a>] [<a href=http://bit.ly/SGDP-CHR-X-idx >index</a>] </li>
 <li>SGDP chrY [<a href=http://bit.ly/SGDP-CHR-Y >VCF</a>] [<a href=http://bit.ly/SGDP-CHR-Y-idx >index</a>] </li>
