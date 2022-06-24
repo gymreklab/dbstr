@@ -4,9 +4,9 @@ DESCRIPTION = "WebSTR: a population-wide database of short tandem repeat variati
 LONG_DESCRIPTION = DESCRIPTION
 NAME = "WebSTR"
 AUTHOR = "Richard Yanicky"
-AUTHOR_EMAIL = "richyanicky@gmail.com"
-MAINTAINER = "Richrad Yanicky"
-MAINTAINER_EMAIL = "richyanicky@gmail.com"
+AUTHOR_EMAIL = "mgymrek@eng.ucsd.edu"
+MAINTAINER = "Melissa Gymrek"
+MAINTAINER_EMAIL = "mgymrek@eng.ucsd.edu"
 DOWNLOAD_URL = 'http://github.com/gymreklab/dbstr'
 LICENSE = 'MIT'
 
@@ -34,10 +34,8 @@ setup(name=NAME,
           'WebSTR = WebSTR.WebSTR:main',
         ],
       },
-      install_requires=['argparse', 'flask','dash','pandas','plotly',\
-                        'numpy', 'pyfaidx',
-                        'dash_core_components', 'dash_html_components',\
-                        'dash_table_experiments'],
+      install_requires=['argparse', 'flask', 'pandas','plotly',\
+                        'numpy', 'pyfaidx'],
       classifiers=['Development Status :: 4 - Beta',\
                        'Programming Language :: Python :: 3.4',\
                        'License :: OSI Approved :: MIT License',\

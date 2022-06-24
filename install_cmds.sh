@@ -3,8 +3,7 @@
 # Installing
 apt-get update
 apt-get -y install python3 python3-pip wget git-core sqlite3 libsqlite3-dev
-pip3 install argparse flask dash dash_core_components dash_html_components dash_table_experiments pandas plotly numpy pyfaidx
-
+pip3 install argparse flask pandas plotly numpy pyfaidx
 
 git clone https://github.com/gymreklab/dbstr
 cd dbstr
