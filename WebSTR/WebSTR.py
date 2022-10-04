@@ -4,15 +4,18 @@ WebSTR database application
 """
 
 import argparse
+#import dash
 from flask import Flask, redirect, render_template, request, session, url_for
+#from dash.dependencies import Output, Input, State
 from collections import deque
 import pandas as pd
-import numpy as np
+import numpy as npa
 import json
 from textwrap import dedent as d
 import sys
 import os
 
+#from locus_view_dash import *
 from locus_view import *
 from region_view import *
 
@@ -20,8 +23,10 @@ from region_view import *
 PLATFORM = "snorlax" # or AWS
 if PLATFORM == "snorlax":
     BasePath = "/storage/resources/dbase/dbSTR/SS1/" # TODO this is allele freq. not used now
-    DbSTRPath = "/storage/resources/dbase/dbSTR/"
-    RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
+    #DbSTRPath = "/storage/resources/dbase/dbSTR/"
+    #RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
+    DbSTRPath = "/Users/oxana/projects/dbstr/data/"
+    RefFaPath = "/Users/oxana/projects/dbstr/data/hg19.fa"
 elif PLATFORM == "AWS":
     BasePath = ""
     DbSTRPath = ""
@@ -34,28 +39,64 @@ else:
 server = Flask(__name__)
 server.secret_key = 'dbSTR' 
 
+#################### Render locus page ###############
+#app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
+#app.config['suppress_callback_exceptions']=True
+#SetupDashApp(app)
+#
+#@app.callback(dash.dependencies.Output('field-dropdown','value'),
+#              [dash.dependencies.Input('url', 'href')])
+#def main_display_page(href): return display_page(href)
+#
+#@app.callback(Output('table2', 'rows'), [Input('field-dropdown', 'value')])
+#def main_update_table(user_selection): return update_table(user_selection, BasePath)
+#
+#@app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
+#def main_getdata(user_selection): return getdata(user_selection, BasePath)
+#
+#@app.callback(Output('Main-graphic','figure'),
+#              [Input('table2','rows')])
+#def main_update_figure(rows): return update_figure(rows)
+
 #################### Render region page ###############
+
 @server.route('/awesome')
 def awesome():
     region_queryOrg = request.args.get('query')
     region_query = region_queryOrg.upper()
-    region_data = GetRegionData(region_query, DbSTRPath)
+    region_data, region_data_hg38 = GetRegionData(region_query, DbSTRPath)
+    
     if region_data.shape[0] > 0:
         strs_id = region_data.strid.unique()
+
         H_data = GetHCalc(strs_id,DbSTRPath)
         estr_data = GetestrCalc(strs_id,DbSTRPath)
         Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
         Regions_data = pd.merge(Regions_data, estr_data, left_on='strid', right_on = 'str_id', how='left')
         Regions_data = Regions_data.replace(np.nan, '', regex=True)
-        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
-        return render_template('view2.html',table=Regions_data.to_records(index=False),
-                               graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
-                               chrom=region_data["chrom"].values[0].replace("chr",""),
-                               strids=list(Regions_data["strid"]))
+        # Get the STRs on the plotly graph
+        print("About to start with the graph")
+        Regions_data.rename(columns = {'chrom':'chr', 'str.start':'start', 'str.end': 'end'}, inplace = True)
+        print(Regions_data)
+        #chrom = Regions_data["chr"].values[0].replace("chr","")
+        gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end = GetGeneShapes(region_data, region_query, DbSTRPath)
+        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end)
+
+        print("Plot the second graph")
+        gene_trace_hg38, gene_shapes_hg38, numgenes_hg38, min_gene_start_hg38, max_gene_end_hg38 = GetGeneGraph(region_query)
+        plotly_plot_json_hg38, plotly_layout_json_hg38 = GetGenePlotlyJSON(region_data_hg38, gene_trace_hg38, gene_shapes_hg38, numgenes_hg38, min_gene_start_hg38, max_gene_end_hg38)
+
+        return render_template('view2.html',
+                               table = Regions_data.to_records(index=False),
+                               table_hg38 = region_data_hg38.to_records(index=False),
+                               graphJSON = plotly_plot_json, layoutJSON = plotly_layout_json,
+                               graphJSONhg38 = plotly_plot_json_hg38, layoutJSONhg38 = plotly_layout_json_hg38,
+                               chrom = region_data["chrom"].values[0].replace("chr",""),
+                               strids = list(Regions_data["strid"]))
+
+        
     else:
         return render_template('view2_nolocus.html')
-
-#################### Render locus page ###############
 
 reffa = pyfaidx.Fasta(RefFaPath)
 @server.route('/locus')
@@ -127,6 +168,7 @@ def internal_server_error(error):
 def unhandled_exception(e):
     server.logger.error('Unhandled Exception: %s', (e))
     return render_template('500.html', emsg = e), 500
+ 
 
 #################### Set up and run the server ###############
 def main():
