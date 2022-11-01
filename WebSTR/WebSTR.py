@@ -62,6 +62,10 @@ server.secret_key = 'dbSTR'
 
 @server.route('/awesome')
 def awesome():
+    region_queryGenome = request.args.get('genome')
+    print("Selected genome")
+    print(region_queryGenome)
+    print("___________________________________")
     region_queryOrg = request.args.get('query')
     region_query = region_queryOrg.upper()
     region_data, region_data_hg38 = GetRegionData(region_query, DbSTRPath)
