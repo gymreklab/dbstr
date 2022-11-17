@@ -4,7 +4,7 @@
 
 <!-- Div for the plotly chart -->
 <div id="chart" class="chart"></div>
-<div id="chart_hg38" class="chart"></div>
+<!--<div id="chart_hg38" class="chart"></div>-->
 <script type="text/javascript">
   var chrom = {{chrom | tojson}};
   var graphs = {{graphJSON | safe}};
@@ -18,7 +18,7 @@
 
   Plotly.newPlot('chart', data, layout);
 
-  Plotly.newPlot('chart_hg38', {{graphJSONhg38 | safe}}, {{layoutJSONhg38 | safe}});
+  //Plotly.newPlot('chart_hg38', {{graphJSONhg38 | safe}}, {{layoutJSONhg38 | safe}});
 
   myPlot.on('plotly_click', function(data){
     for(var i=0; i < data.points.length; i++){
@@ -65,9 +65,12 @@ mark.green {
 <div id="plotLegend" class="plotfooter"></div>
 
 <!-- Main table of STRs in this region -->
+
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-10 col-md-offset-1">
+
+      {% if genome == 'hg19' %}
       <h3>STR locations found in hg19</h3>  
       <p> <b> Motif length:</b> <mark class="gray"> 1: gray, <mark class="red"> 2: red , <mark class="gold"> 3: gold, <mark class="blue"> 4: blue, <mark class="purple"> 5: purple, <mark class="green"> 6: green </p>
       <h6> Hover over table column headings to display addtional details </h6>  
@@ -87,7 +90,9 @@ mark.green {
         {% endfor %}
         </tbody>
       </table>
+      {% endif %}
 
+      {% if genome == 'hg38' %}
       <h3>STR locations found in hg38</h3>  
         <div id="variants_table_container" style>  
   
@@ -102,7 +107,7 @@ mark.green {
               <th><abbr title="Avg size difference in TCGA CRC dataset"> Avg size diff </abbr></th></thead>
             </thead>
             <tbody>
-            {% for d in table_hg38 %}
+            {% for d in table %}
             <tr>
               <td><a href="/" target="_blank"> 
                 {{ d[8] }}:{{ d [1] }}-{{ d[2] }}</a></td>
@@ -115,6 +120,7 @@ mark.green {
             {% endfor %}
             </tbody>
           </table>
+          {% endif %}
       </div>
     </div>
   </div>

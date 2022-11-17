@@ -8,19 +8,21 @@ import re
 from dbutils import *
 
 MAXREGIONSIZE = 1500000
-genome = "hg38"
+genome = "hg19"
 GENEBUFFER = 0.1
 EXON_WIDTH = 0.3
 GENE_WIDTH = 0.03
 GENE_COLOR = "black"
 API_URL = 'https://str-explorer.herokuapp.com'
+#API_URL = 'http://0.0.0.0:8080'
 
 def GetRegionData(region_query, DbSTRPath):
+    print("GetRegionData")
     ct = connect_db(DbSTRPath).cursor()
     colpos = region_query.find(":")
     genebuf = 0.1 # increase region width by this much
     df_hg19 = pd.DataFrame({})
-    df_hg38 = pd.DataFrame({})
+   
     #if colpos > 0: # search is a range and we need to return all genes in the range.
     if colpos < 0: # search is by gene
         print("colpos is less than 0")
@@ -56,31 +58,42 @@ def GetRegionData(region_query, DbSTRPath):
             chrom, start, end = None, None, None
 
     if chrom is not None:
-        if (genome == 'hg38'):
-            print("Calling STRExplorer with " + region_query)
-            if (colpos < 0):
-                strexp_url = API_URL + '/repeats/?gene_names=' + region_query
-            elif (colpos > 0):
-                strexp_url = API_URL + '/?reqion_query=chr' + region_query
-                
-            resp = requests.get(strexp_url)
-            df_hg38 = pd.DataFrame.from_records(resp.json())
-
         region_query = ("select str.chrom,str.strid,str.motif,str.start,str.end,str.period,str.length"
                         " from"
                         " strlocmotif str"
                         " where str.chrom = '{}' and str.end >= {} and str.start <= {}").format(chrom, start, end)
         df = ct.execute(region_query).fetchall()
-        if len(df) == 0: return df_hg19, df_hg38
+        if len(df) == 0: return df_hg19
         df_hg19 = pd.DataFrame.from_records(df)
-        df_hg19.columns = ["chrom","strid", "motif", "str.start","str.end","period","str.length"] 
+        print(df_hg19)
+        df_hg19.columns = ["chr","strid", "motif", "start","end","period","length"] 
         df_hg19["featuretype"] = "NA"
-        df_hg19["chrom"] = df_hg19["chrom"].apply(lambda x: x.replace("chr",""))
-        df_hg19["str.length"] = df_hg19["str.length"].round(2)
-        df_hg19 = df_hg19[["chrom","str.start","str.end","motif","period","str.length","strid","featuretype"]].sort_values("str.start")
+        df_hg19["chr"] = df_hg19["chr"].apply(lambda x: x.replace("chr",""))
+        df_hg19["length"] = df_hg19["length"].round(2)
+        df_hg19 = df_hg19[["chr","start","end","motif","period","length","strid","featuretype"]].sort_values("start")
         df_hg19.drop_duplicates(inplace=True)
+        print(df_hg19)
 
-    return df_hg19, df_hg38
+    return df_hg19
+
+def GetRegionDataAPI(region_query):
+    print("GetRegionDataAPI")
+    
+    colpos = region_query.find(":")
+    #genebuf = 0.1 # increase region width by this much
+   
+    df_hg38 = pd.DataFrame({})
+    
+    if (colpos < 0):
+        strexp_url = API_URL + '/repeats/?gene_names=' + region_query
+    elif (colpos > 0):
+        strexp_url = API_URL + '/repeats/?reqion_query=' + region_query
+    print(strexp_url)
+        
+    resp = requests.get(strexp_url)
+    df_hg38 = pd.DataFrame.from_records(resp.json())
+
+    return df_hg38
 
 def createret(thecolor,betav,tissue,gene):
     ret = '<span class="badge" data-toggle="tooltip" title=' + tissue + '&nbsp' + '(' + gene + ')' + ' style=background-color:' + thecolor + '>' + str(betav) + '</span>'     
@@ -234,26 +247,26 @@ def GetColor(period):
     colors = ["gray","red","gold","blue","purple","green"]
     return colors[int(period)-1]
 
-def GetGenePlotlyJSON(region_data, gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end):
+def GetGenePlotlyJSON(region_data, gene_trace, gene_shapes, numgenes):
     # get gene_start and gene_end for hg 38
-    #if (max_gene_end) > 0:
-    #   region_data2, region_data2_hg38 =  GetRegionData(region_data["chrom"].values[0] + ":" + str(min_gene_start) + "-" + str(max_gene_end), DbSTRPath)
-    #   dummy, region_data2_hg38 =  GetRegionData(region_data["chrom"].values[0] + ":" + str(min_gene_start_hg38) + "-" + str(max_gene_end_hg38), DbSTRPath)
     print("GetGenePlotlyJSON")
     print(region_data)
+    # Draw gene info
+    region_data2 = region_data
     
-    
+    #chrom = region_data2["chrom"].values[0].replace("chr","")
+    print(region_data2)
     # Get points for each STR
-    trace = go.Scatter(
-        x = (region_data["start"]+region_data["end"])/2,
-        y = [0]*region_data.shape[0],
+    trace1 = go.Scatter(
+        x = (region_data2["start"]+region_data2["end"])/2,
+        y = [0]*region_data2.shape[0],
         mode="markers",
-        marker=dict(size=10, color=region_data["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
-        text=region_data.apply(lambda x: x["chr"]+":"+str(x["start"]) + " ("+x["motif"]+")", 1),
+        marker=dict(size=10, color=region_data2["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
+        text=region_data2.apply(lambda x: x["chr"]+":"+str(x["start"]) + " ("+x["motif"]+")", 1),
         hoverinfo='text'
     )
-    
-    plotly_data = [trace, gene_trace]
+    print(trace1)
+    plotly_data = [trace1, gene_trace]
     plotly_layout= go.Layout(
         height=300+50*numgenes,
         hovermode= 'closest',
@@ -278,7 +291,7 @@ def GetGenePlotlyJSON(region_data, gene_trace, gene_shapes, numgenes, min_gene_s
             showticklabels=False
         )
     )
-
+    print(plotly_layout)
     plotly_plot_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder) 
     plotly_layout_json = json.dumps(plotly_layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json, plotly_layout_json
@@ -388,7 +401,9 @@ def GetFreqPlotlyJSON(freq_dist):
     plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json_datab, plotly_plot_json_layoutb
 
-
+"""
+New version of the graph function, for the API data
+"""
 def GetGeneGraph(region_query):
     genes = []
     colpos = region_query.find(":")
@@ -455,7 +470,8 @@ def GetGeneGraph(region_query):
     
     return trace, shapes, len(genes), min_start, max_end
 
-def GetGeneShapes(region_data, region_query, DbSTRPath):
+def GetGeneShapes(region_query, DbSTRPath):
+    print("GetGeneShapes")
     ct = connect_db(DbSTRPath).cursor()
     # First, get list of genes in this region
     genes = []
@@ -484,6 +500,7 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
     max_end = 0
     # Then, for each gene get features 
     for i in range(len(genes)):
+        print(genes)
         gene = genes[i]
         feature_query = ("select fe.id,fe.start,fe.end,fe.strand from features fe, newattrib at where at.attrib='gene_name' and at.value='{}' and fe.id=at.id").format(gene)
         feature_df = ct.execute(feature_query).fetchall()
