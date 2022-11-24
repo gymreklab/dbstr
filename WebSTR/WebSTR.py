@@ -24,13 +24,14 @@ PLATFORM = "snorlax" # or AWS
 if PLATFORM == "snorlax":
     BasePath = "/storage/resources/dbase/dbSTR/SS1/" # TODO this is allele freq. not used now
     #DbSTRPath = "/storage/resources/dbase/dbSTR/"
-    #RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
+    #RefFaPath_hg19 = "/storage/resources/dbase/human/hg19/hg19.fa"
     DbSTRPath = "/Users/oxana/projects/dbstr/data/"
-    RefFaPath = "/Users/oxana/projects/dbstr/data/hg19.fa"
+    RefFaPath_hg19 = "/Users/oxana/projects/dbstr/data/hg19.fa"
+    RefFaPath_hg38 = "/Users/oxana/projects/dbstr/data/hg38.fa"
 elif PLATFORM == "AWS":
     BasePath = ""
     DbSTRPath = ""
-    RefFaPath = "" # TODO
+    RefFaPath_hg19 = "" # TODO
 else:
     sys.stderr.write("Could not locate database files\n")
     sys.exit(1)
@@ -117,9 +118,10 @@ def awesome():
                                 strids = list(region_data_hg38["repeat_id"]),
                                 genome = region_queryGenome)  
 
-reffa = pyfaidx.Fasta(RefFaPath)
+
 @server.route('/locus')
 def locusview():
+    reffa = pyfaidx.Fasta(RefFaPath_hg19)
     str_query = request.args.get('STRID')
     chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
     gtex_data = GetGTExInfo(str_query, DbSTRPath)

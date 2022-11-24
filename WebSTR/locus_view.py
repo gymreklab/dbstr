@@ -1,9 +1,12 @@
 from dbutils import *
 import pyfaidx
+import requests
+import json
 
 seqbuf = 120
 seqbreakline = 100
-    
+API_URL = 'https://str-explorer.herokuapp.com'
+
 def GetSTRSeqHTML(lflank, strseq, rflank, charbreak=50):
     ret = '<font size="3" color="black">...'
     numchar = 0
@@ -34,6 +37,26 @@ def GetSTRInfo(strid, DbSTRPath, reffa):
     chrom = df[0][0]
     start = int(df[0][1])
     end = int(df[0][2])
+    lflank = str(reffa[chrom][start-seqbuf:start]).upper()
+    strseq = str(reffa[chrom][start:end]).upper()
+    rflank = str(reffa[chrom][end:end+seqbuf]).upper()
+    seq = GetSTRSeqHTML(lflank,strseq,rflank)
+    return chrom, start, end, seq
+
+def GetSTRInfoAPI(repeat_id, reffa):
+    
+    repeat_url = API_URL + '/repeatinfo/?repeat_id=' + repeat_id 
+    print("calling api with " + repeat_url)
+    
+    resp = requests.get(repeat_url)
+    repeat = json.loads(resp.text)
+    
+
+    #if len(df) == 0: return None, None, None, None
+    chrom = repeat.chr
+    start =  repeat.start
+    end = repeat.end
+
     lflank = str(reffa[chrom][start-seqbuf:start]).upper()
     strseq = str(reffa[chrom][start:end]).upper()
     rflank = str(reffa[chrom][end:end+seqbuf]).upper()
