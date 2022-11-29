@@ -50,18 +50,25 @@ def GetSTRInfoAPI(repeat_id, reffa):
     
     resp = requests.get(repeat_url)
     repeat = json.loads(resp.text)
-    
+
+    print(repeat)
 
     #if len(df) == 0: return None, None, None, None
-    chrom = repeat.chr
-    start =  repeat.start
-    end = repeat.end
+    chrom = repeat['chr']
+    start =  repeat['start']
+    end = repeat['end']
+    crc_data = []
+
+    if repeat['total_calls'] is not None:
+        crc_data = [repeat['total_calls'], repeat['frac_variable'], repeat['avg_size_diff']]
+
 
     lflank = str(reffa[chrom][start-seqbuf:start]).upper()
     strseq = str(reffa[chrom][start:end]).upper()
     rflank = str(reffa[chrom][end:end+seqbuf]).upper()
     seq = GetSTRSeqHTML(lflank,strseq,rflank)
-    return chrom, start, end, seq
+    print(seq)
+    return chrom, start, end, seq, crc_data
 
 def GetGTExInfo(strid, DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()

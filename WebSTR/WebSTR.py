@@ -21,15 +21,16 @@ from region_view import *
 
 #################### Database paths ###############
 PLATFORM = "snorlax" # or AWS
+BASEPATH =  "/home/oxana/projects/dbstr/data/"
 if PLATFORM == "snorlax":
-    BasePath = "/storage/resources/dbase/dbSTR/SS1/" # TODO this is allele freq. not used now
+    #BasePath = "/storage/resources/dbase/dbSTR/SS1/" # TODO this is allele freq. not used now
     #DbSTRPath = "/storage/resources/dbase/dbSTR/"
     #RefFaPath_hg19 = "/storage/resources/dbase/human/hg19/hg19.fa"
-    DbSTRPath = "/Users/oxana/projects/dbstr/data/"
-    RefFaPath_hg19 = "/Users/oxana/projects/dbstr/data/hg19.fa"
-    RefFaPath_hg38 = "/Users/oxana/projects/dbstr/data/hg38.fa"
+    DbSTRPath = BASEPATH
+    RefFaPath_hg19 = BASEPATH + "hg19.fa"
+    RefFaPath_hg38 = BASEPATH + "hg38.fa"
 elif PLATFORM == "AWS":
-    BasePath = ""
+    #BasePath = ""
     DbSTRPath = ""
     RefFaPath_hg19 = "" # TODO
 else:
@@ -121,14 +122,35 @@ def search():
 
 @server.route('/locus')
 def locusview():
-    reffa = pyfaidx.Fasta(RefFaPath_hg19)
-    str_query = request.args.get('STRID')
-    chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
-    gtex_data = GetGTExInfo(str_query, DbSTRPath)
-    mut_data = GetMutInfo(str_query, DbSTRPath)
-    imp_data = GetImputationInfo(str_query, DbSTRPath)
-    imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
-    freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
+    print("locusview")
+    str_query = request.args.get('repeat_id')
+    genome_query = request.args.get('genome')
+    print((genome_query == 'hg38'))
+    mut_data = []
+    imp_data = []
+    gtex_data = []
+    imp_allele_data = []
+    freq_dist = []
+    crc_data = []
+    plotly_plot_json_datab = dict()
+    plotly_plot_json_layoutb = dict()
+
+    if ((genome_query is None) or (genome_query == 'hg19')):
+        reffa = pyfaidx.Fasta(RefFaPath_hg19)
+
+        chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
+        gtex_data = GetGTExInfo(str_query, DbSTRPath)
+        mut_data = GetMutInfo(str_query, DbSTRPath)
+        imp_data = GetImputationInfo(str_query, DbSTRPath)
+        imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
+        freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
+        
+    elif (genome_query == 'hg38'):
+        print("locus view hg38")
+        reffa = pyfaidx.Fasta(RefFaPath_hg38)
+        chrom, start, end, seq, crc_data = GetSTRInfoAPI(str_query, reffa)
+        print(chrom)
+        
     if len(mut_data) != 1: mut_data = None
     else:
         mut_data = list(mut_data[0])
@@ -138,13 +160,16 @@ def locusview():
         imp_data = list(imp_data[0])
 
     if len(gtex_data) == 0: gtex_data = None
+    if len(crc_data) == 0: crc_data = None
     if len(imp_allele_data) == 0: imp_allele_data = None
+
     if len(freq_dist) > 0:
         plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
-        return render_template('locus.html', strid=str_query,
+    print("about to render")
+    return render_template('locus.html', strid=str_query,
                            graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
-                           estr=gtex_data, mut_data=mut_data,
+                           estr=gtex_data, mut_data=mut_data, crc_data = crc_data,
                            imp_data=imp_data, imp_allele_data=imp_allele_data,freq_dist=freq_dist)
 
 #################### Render HTML pages ###############

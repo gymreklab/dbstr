@@ -80,7 +80,7 @@ mark.green {
         <tbody>
         {% for d in table %}
         <tr>
-          <td><a href="/locus?STRID={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
+          <td><a href="/locus?repeat_id={{d[6]}}" target="_blank"> {{ d[0] }}:{{ d [1] }}-{{ d[2] }}</a></td>
           <td>{{ d[3] }}</td>
           <td>{{'%0.1f' % d[5]|float}}</td>
                 <td>{{ d[13] | safe }}</td>
@@ -109,10 +109,10 @@ mark.green {
             <tbody>
             {% for d in table %}
             <tr>
-              <td><a href="/" target="_blank"> 
-                {{ d[8] }}:{{ d [1] }}-{{ d[2] }}</a></td>
-              <td>{{ d[4] }}</td>
-              <td>{{'%0.1f' % d[6]|float}}</td>
+              <td><a href="/locus?repeat_id={{d[0]}}&genome='hg38'" target="_blank"> 
+                {{ d[1] }}:{{ d [2] }}-{{ d[3] }}</a></td>
+              <td>{{ d[5] }}</td>
+              <td>{{d[7]}}</td>
               <td>{{ d[12] | safe }}</td>
               <td>{{ d[13] | safe }}</td>
               <td>{{ d[14] | safe }}</td>
