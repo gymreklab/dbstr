@@ -61,8 +61,8 @@ server.secret_key = 'dbSTR'
 
 #################### Render region page ###############
 
-@server.route('/awesome')
-def awesome():
+@server.route('/search')
+def search():
     region_queryGenome = request.args.get('genome')
     print("Selected genome")
     print(region_queryGenome)

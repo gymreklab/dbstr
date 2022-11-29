@@ -146,8 +146,11 @@
             <li class="nav-item"><a class="nav-link" href="/faq" class="text-white">FAQ</a></li>
         </ul>
           
-          <form action="/awesome" class="form-inline my-2 my-lg-0" role="search">
+          <form action="/search" class="form-inline my-2 my-lg-0" role="search">
             <div class="form-group" id="navbar-awesomebar">
+              <select name="genome" class="form-control" style="display:none">
+                <option selected value="hg38">H. Sapiens (hg38)</option>
+              </select>
                 <input id="navbar-searchbox-input" name="query" class="form-control mr-sm-2" type="text" placeholder="Gene, transcript, variant, or region"/>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
             </div>
