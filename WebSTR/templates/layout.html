@@ -31,7 +31,7 @@
     {% block loads %}{% endblock %}
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='typeahead.bundle.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='plotly-2.16.1.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.pager.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='underscore-min.js') }}"></script>
@@ -97,7 +97,7 @@
 }
 
 .collapsible {
-  background-color: black;
+  background-color:#343a40;
   color: white;
   cursor: pointer;
   padding: 10px;
@@ -109,7 +109,7 @@
 }
 
 .active {
-  background-color: green;
+  background-color: #17a2b8;
 }
 
 .collapsible:hover {
@@ -118,9 +118,10 @@
 
 .content {
   padding: 0 18px;
+  margin-top: 10px;
   display: none;
   overflow: hidden;
-  width: 100%;
+  min-width: 1200px;
   background-color: #FFFFFF;
   border: 1px solid white;
 

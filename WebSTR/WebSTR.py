@@ -69,6 +69,7 @@ def search():
     print(region_queryGenome)
     print("___________________________________")
     region_queryOrg = request.args.get('query')
+    print(region_queryOrg)
     region_query = region_queryOrg.upper()
 
     if (region_queryGenome == 'hg19'):
@@ -88,6 +89,8 @@ def search():
             print(Regions_data)
             #chrom = Regions_data["chr"].values[0].replace("chr","")
             gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end = GetGeneShapes(region_query, DbSTRPath)
+            print(max_gene_end)
+            region_data2 = Regions_data
             if (max_gene_end) > 0:
                 region_data2 =  GetRegionData(region_data["chr"].values[0] + ":" + str(min_gene_start) + "-" + str(max_gene_end), DbSTRPath)
 
@@ -105,12 +108,12 @@ def search():
         # Use the API, because hg38 is requested
         region_data_hg38 = GetRegionDataAPI(region_query)
         gene_trace_hg38, gene_shapes_hg38, numgenes_hg38, min_gene_start_hg38, max_gene_end_hg38 = GetGeneGraph(region_query)
-         # Need to adapt that part for both or have a separate function?
-        if (max_gene_end_hg38) > 0:
-            print("max_gene_end")
-            hg38_temp =  GetRegionDataAPI(region_data_hg38["chr"].values[0] + ":" + str(min_gene_start_hg38) + "-" + str(max_gene_end_hg38))
+        
+        #if (max_gene_end_hg38) > 0:
+        #    print("max_gene_end")
+        #    hg38_temp =  GetRegionDataAPI(region_data_hg38["chr"].values[0] + ":" + str(min_gene_start_hg38) + "-" + str(max_gene_end_hg38))
 
-        plotly_plot_json_hg38, plotly_layout_json_hg38 = GetGenePlotlyJSON(hg38_temp, gene_trace_hg38, gene_shapes_hg38, numgenes_hg38)
+        plotly_plot_json_hg38, plotly_layout_json_hg38 = GetGenePlotlyJSON(region_data_hg38, gene_trace_hg38, gene_shapes_hg38, numgenes_hg38)
         print(region_data_hg38.to_records(index=False))
         return render_template('view2.html',
                                 table = region_data_hg38.to_records(index=False),
@@ -132,23 +135,29 @@ def locusview():
     imp_allele_data = []
     freq_dist = []
     crc_data = []
+    gene_name = ""
+    gene_desc = ""
+    motif = ""
+    copies = ""
     plotly_plot_json_datab = dict()
     plotly_plot_json_layoutb = dict()
 
     if ((genome_query is None) or (genome_query == 'hg19')):
         reffa = pyfaidx.Fasta(RefFaPath_hg19)
 
-        chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
+        chrom, start, end, motif, copies, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
         gtex_data = GetGTExInfo(str_query, DbSTRPath)
         mut_data = GetMutInfo(str_query, DbSTRPath)
         imp_data = GetImputationInfo(str_query, DbSTRPath)
         imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
         freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
+        print(freq_dist)
         
     elif (genome_query == 'hg38'):
         print("locus view hg38")
         reffa = pyfaidx.Fasta(RefFaPath_hg38)
-        chrom, start, end, seq, crc_data = GetSTRInfoAPI(str_query, reffa)
+        chrom, start, end, seq, gene_name, gene_desc, motif, copies, crc_data = GetSTRInfoAPI(str_query, reffa)
+        #freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
         print(chrom)
         
     if len(mut_data) != 1: mut_data = None
@@ -169,7 +178,8 @@ def locusview():
     return render_template('locus.html', strid=str_query,
                            graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
-                           estr=gtex_data, mut_data=mut_data, crc_data = crc_data,
+                           gene_name=gene_name, gene_desc=gene_desc,
+                           estr=gtex_data, mut_data=mut_data, motif=motif, copies=copies, crc_data = crc_data,
                            imp_data=imp_data, imp_allele_data=imp_allele_data,freq_dist=freq_dist)
 
 #################### Render HTML pages ###############

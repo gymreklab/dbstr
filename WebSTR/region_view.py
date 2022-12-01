@@ -83,7 +83,7 @@ def GetRegionDataAPI(region_query):
     #genebuf = 0.1 # increase region width by this much
    
     df_hg38 = pd.DataFrame({})
-    
+    print(region_query)
     if (colpos < 0):
         strexp_url = API_URL + '/repeats/?gene_names=' + region_query
     elif (colpos > 0):
@@ -91,8 +91,9 @@ def GetRegionDataAPI(region_query):
     print(strexp_url)
         
     resp = requests.get(strexp_url)
+    print(resp)
     df_hg38 = pd.DataFrame.from_records(resp.json())
-
+    print(df_hg38)
     return df_hg38
 
 def createret(thecolor,betav,tissue,gene):
@@ -255,6 +256,7 @@ def GetGenePlotlyJSON(region_data, gene_trace, gene_shapes, numgenes):
     region_data2 = region_data
     
     #chrom = region_data2["chrom"].values[0].replace("chr","")
+    chr = region_data2["chr"].values[0].replace("chr","")
     print(region_data2)
     # Get points for each STR
     trace1 = go.Scatter(
@@ -313,55 +315,75 @@ def GetFreqPlotlyJSON2(freq_dist):
     #for Cohort, X in data1.groupby('a'):
     trace1 = go.Bar(
         x=x1['b'],
-        y=x1['c']
+        y=x1['c'],
+        name = "Gtex"
     )
 
     trace2 = go.Bar(
         x=x2['b'],
         y=x2['c'],
         xaxis='x2',
-        yaxis='y2'
+        yaxis='y2',
+        name = "1000 Genomes Africa"
     )
 
     trace3 = go.Bar(
         x=x3['b'],
         y=x3['c'],
         xaxis='x3',
-        yaxis='y3'
+        yaxis='y3',
+        name = "1000 Genomes East Asia"
     )
 
     trace4 = go.Bar(
         x=x4['b'],
         y=x4['c'],
         xaxis='x4',
-        yaxis='y4'
+        yaxis='y4',
+        name = "1000 Genomes Europe"
     )
 
     data = [trace1, trace2, trace3, trace4]
 
     layout = go.Layout(
-        showlegend=False,
+        showlegend=True,
+        legend_title="Populations",
+        margin=dict(l=20, r=20, t=20, b=20),
+        width=1200,
+         
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
         xaxis=dict(
+            automargin = True,
             domain=[0, 0.24],
-            title="Gtex",
+            titlefont=dict(size=20),
+            title="Number of motif copies",
             range=[minx, maxx]
         ),
         yaxis=dict(
-            title="Count"
+            automargin = True,
+            title_text="Count in a population",
+            titlefont=dict(size=20),
+            showline=True
         ),
         xaxis2=dict(
             domain=[0.25, 0.49],
             anchor='y2',
-            title="1000 Genomes Africa",
+            
             range=[minx, maxx]
         ),
         yaxis2=dict(
-            anchor='x2'
+            anchor='x2',
         ),
         xaxis3=dict(
             domain=[0.50, 0.74],
             anchor='y3',
-            title="1000 Genomes East Asia",
+           
             range=[minx, maxx]
         ),
         yaxis3=dict(
@@ -370,7 +392,7 @@ def GetFreqPlotlyJSON2(freq_dist):
         xaxis4=dict(
             domain=[0.75, 1.0],
             anchor='y4',
-            title="1000 Genomes Europe",
+             
             range=[minx, maxx]
         ),
         yaxis4=dict(
@@ -379,6 +401,7 @@ def GetFreqPlotlyJSON2(freq_dist):
 
     plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
     plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
+    print(plotly_plot_json_layoutb)
     return plotly_plot_json_datab, plotly_plot_json_layoutb
 
 def GetFreqPlotlyJSON(freq_dist):
@@ -411,7 +434,7 @@ def GetGeneGraph(region_query):
             gene_url = API_URL + '/genefeatures/?gene_names=' + region_query 
             print("calling api with " + gene_url)
     else:
-        gene_url = API_URL + '/genefeatures/?reqion_query=chr' + region_query 
+        gene_url = API_URL + '/genefeatures/?reqion_query=' + region_query 
         print(gene_url)
     
     resp = requests.get(gene_url)

@@ -31,17 +31,20 @@ def GetSTRSeqHTML(lflank, strseq, rflank, charbreak=50):
 
 def GetSTRInfo(strid, DbSTRPath, reffa):
     ct = connect_db(DbSTRPath).cursor()
-    squery = ("select str.chrom, str.start, str.end from strlocmotif str where str.strid = '{}'").format(strid)
+    squery = ("select str.chrom, str.start, str.end,str.motif, (str.end-str.start+1)/str.period copies from strlocmotif str where str.strid = '{}'").format(strid)
     df = ct.execute(squery).fetchall()
     if len(df) == 0: return None, None, None, None
     chrom = df[0][0]
     start = int(df[0][1])
     end = int(df[0][2])
+    motif = df[0][3]
+    copies = df[0][4]
+
     lflank = str(reffa[chrom][start-seqbuf:start]).upper()
     strseq = str(reffa[chrom][start:end]).upper()
     rflank = str(reffa[chrom][end:end+seqbuf]).upper()
     seq = GetSTRSeqHTML(lflank,strseq,rflank)
-    return chrom, start, end, seq
+    return chrom, start, end, motif, copies, seq
 
 def GetSTRInfoAPI(repeat_id, reffa):
     
@@ -57,8 +60,12 @@ def GetSTRInfoAPI(repeat_id, reffa):
     chrom = repeat['chr']
     start =  repeat['start']
     end = repeat['end']
+    motif = repeat['motif']
+    copies = repeat['copies']
+    gene_name = repeat['gene_name']
+    gene_desc = repeat['gene_desc']
     crc_data = []
-
+    print(repeat)
     if repeat['total_calls'] is not None:
         crc_data = [repeat['total_calls'], repeat['frac_variable'], repeat['avg_size_diff']]
 
@@ -68,7 +75,7 @@ def GetSTRInfoAPI(repeat_id, reffa):
     rflank = str(reffa[chrom][end:end+seqbuf]).upper()
     seq = GetSTRSeqHTML(lflank,strseq,rflank)
     print(seq)
-    return chrom, start, end, seq, crc_data
+    return chrom, start, end, seq, gene_name, gene_desc, motif, copies, crc_data
 
 def GetGTExInfo(strid, DbSTRPath):
     ct = connect_db(DbSTRPath).cursor()
