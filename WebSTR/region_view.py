@@ -1,4 +1,5 @@
 import json
+import requests
 import pandas as pd
 import numpy as np
 import plotly
@@ -7,13 +8,24 @@ import re
 from dbutils import *
 
 MAXREGIONSIZE = 1500000
+genome = "hg19"
+GENEBUFFER = 0.1
+EXON_WIDTH = 0.3
+GENE_WIDTH = 0.03
+GENE_COLOR = "black"
+API_URL = 'https://str-explorer.herokuapp.com'
+#API_URL = 'http://0.0.0.0:5000'
 
 def GetRegionData(region_query, DbSTRPath):
+    print("GetRegionData")
     ct = connect_db(DbSTRPath).cursor()
     colpos = region_query.find(":")
     genebuf = 0.1 # increase region width by this much
+    df_hg19 = pd.DataFrame({})
+   
     #if colpos > 0: # search is a range and we need to return all genes in the range.
     if colpos < 0: # search is by gene
+        print("colpos is less than 0")
         the_attrib = "gene_name"
         if region_query[:3] == "ENS":
             the_attrib = "gene_id"
@@ -43,23 +55,46 @@ def GetRegionData(region_query, DbSTRPath):
             start = int(region_query2.split(":")[1].split("-")[0])
             end = int(region_query2.split(":")[1].split("-")[1])
         except:
-            chrom, start, end = None,None, None
+            chrom, start, end = None, None, None
+
     if chrom is not None:
         region_query = ("select str.chrom,str.strid,str.motif,str.start,str.end,str.period,str.length"
                         " from"
                         " strlocmotif str"
                         " where str.chrom = '{}' and str.end >= {} and str.start <= {}").format(chrom, start, end)
         df = ct.execute(region_query).fetchall()
-        if len(df) == 0: return pd.DataFrame({})
-        df_df = pd.DataFrame.from_records(df)
-        df_df.columns = ["chrom","strid", "motif", "str.start","str.end","period","str.length"] 
-        df_df["featuretype"] = "NA"
-        df_df["chrom"] = df_df["chrom"].apply(lambda x: x.replace("chr",""))
-        df_df["str.length"] = df_df["str.length"].round(2)
-        df_df = df_df[["chrom","str.start","str.end","motif","period","str.length","strid","featuretype"]].sort_values("str.start")
-        df_df.drop_duplicates(inplace=True)
-    else: df_df = pd.DataFrame({})
-    return df_df
+        if len(df) == 0: return df_hg19
+        df_hg19 = pd.DataFrame.from_records(df)
+        print(df_hg19)
+        df_hg19.columns = ["chr","strid", "motif", "start","end","period","length"] 
+        df_hg19["featuretype"] = "NA"
+        df_hg19["chr"] = df_hg19["chr"].apply(lambda x: x.replace("chr",""))
+        df_hg19["length"] = df_hg19["length"].round(2)
+        df_hg19 = df_hg19[["chr","start","end","motif","period","length","strid","featuretype"]].sort_values("start")
+        df_hg19.drop_duplicates(inplace=True)
+        print(df_hg19)
+
+    return df_hg19
+
+def GetRegionDataAPI(region_query):
+    print("GetRegionDataAPI")
+    
+    colpos = region_query.find(":")
+    #genebuf = 0.1 # increase region width by this much
+   
+    df_hg38 = pd.DataFrame({})
+    print(region_query)
+    if (colpos < 0):
+        strexp_url = API_URL + '/repeats/?gene_names=' + region_query
+    elif (colpos > 0):
+        strexp_url = API_URL + '/repeats/?reqion_query=' + region_query
+    print(strexp_url)
+        
+    resp = requests.get(strexp_url)
+    print(resp)
+    df_hg38 = pd.DataFrame.from_records(resp.json())
+    print(df_hg38)
+    return df_hg38
 
 def createret(thecolor,betav,tissue,gene):
     ret = '<span class="badge" data-toggle="tooltip" title=' + tissue + '&nbsp' + '(' + gene + ')' + ' style=background-color:' + thecolor + '>' + str(betav) + '</span>'     
@@ -213,30 +248,27 @@ def GetColor(period):
     colors = ["gray","red","gold","blue","purple","green"]
     return colors[int(period)-1]
 
-def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
-    
+def GetGenePlotlyJSON(region_data, gene_trace, gene_shapes, numgenes):
+    # get gene_start and gene_end for hg 38
+    print("GetGenePlotlyJSON")
+    print(region_data)
     # Draw gene info
-    gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end = GetGeneShapes(region_data, region_query, DbSTRPath)
+    #if len(region_data.index) != 0:
     region_data2 = region_data
- 
-    if (max_gene_end) > 0:
-       region_data2 =  GetRegionData(region_data["chrom"].values[0] + ":" + str(min_gene_start) + "-" + str(max_gene_end), DbSTRPath)
-
-    chrom = region_data2["chrom"].values[0].replace("chr","")
-
+    
+    #chrom = region_data2["chrom"].values[0].replace("chr","")
+    chr = region_data2["chr"].values[0].replace("chr","")
+    print(region_data2)
     # Get points for each STR
     trace1 = go.Scatter(
-        x = (region_data2["str.start"]+region_data2["str.end"])/2,
+        x = (region_data2["start"]+region_data2["end"])/2,
         y = [0]*region_data2.shape[0],
         mode="markers",
         marker=dict(size=10, color=region_data2["period"].apply(lambda x: GetColor(x)), line=dict(width=2)),
-        text=region_data2.apply(lambda x: x["chrom"]+":"+str(x["str.start"]) + " ("+x["motif"]+")", 1),
+        text=region_data2.apply(lambda x: x["chr"]+":"+str(x["start"]) + " ("+x["motif"]+")", 1),
         hoverinfo='text'
     )
-
-
-
-
+    print(trace1)
     plotly_data = [trace1, gene_trace]
     plotly_layout= go.Layout(
         height=300+50*numgenes,
@@ -245,7 +277,7 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
         #legend=dict(orientation="h"),
         shapes=gene_shapes,
         xaxis=dict(
-            title="Position (chr%s)"%chrom ,
+            title="Position (chr%s)"%chr ,
             autorange=True,
             showgrid=False,
             zeroline=False,
@@ -262,7 +294,7 @@ def GetGenePlotlyJSON(region_data, region_query, DbSTRPath):
             showticklabels=False
         )
     )
-
+    print(plotly_layout)
     plotly_plot_json = json.dumps(plotly_data, cls=plotly.utils.PlotlyJSONEncoder) 
     plotly_layout_json = json.dumps(plotly_layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json, plotly_layout_json
@@ -284,55 +316,75 @@ def GetFreqPlotlyJSON2(freq_dist):
     #for Cohort, X in data1.groupby('a'):
     trace1 = go.Bar(
         x=x1['b'],
-        y=x1['c']
+        y=x1['c'],
+        name = "Gtex"
     )
 
     trace2 = go.Bar(
         x=x2['b'],
         y=x2['c'],
         xaxis='x2',
-        yaxis='y2'
+        yaxis='y2',
+        name = "1000 Genomes Africa"
     )
 
     trace3 = go.Bar(
         x=x3['b'],
         y=x3['c'],
         xaxis='x3',
-        yaxis='y3'
+        yaxis='y3',
+        name = "1000 Genomes East Asia"
     )
 
     trace4 = go.Bar(
         x=x4['b'],
         y=x4['c'],
         xaxis='x4',
-        yaxis='y4'
+        yaxis='y4',
+        name = "1000 Genomes Europe"
     )
 
     data = [trace1, trace2, trace3, trace4]
 
     layout = go.Layout(
-        showlegend=False,
+        showlegend=True,
+        legend_title="Populations",
+        margin=dict(l=20, r=20, t=20, b=20),
+        width=1200,
+         
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
         xaxis=dict(
+            automargin = True,
             domain=[0, 0.24],
-            title="Gtex",
+            titlefont=dict(size=20),
+            title="Number of motif copies",
             range=[minx, maxx]
         ),
         yaxis=dict(
-            title="Count"
+            automargin = True,
+            title_text="Count in a population",
+            titlefont=dict(size=20),
+            showline=True
         ),
         xaxis2=dict(
             domain=[0.25, 0.49],
             anchor='y2',
-            title="1000 Genomes Africa",
+            
             range=[minx, maxx]
         ),
         yaxis2=dict(
-            anchor='x2'
+            anchor='x2',
         ),
         xaxis3=dict(
             domain=[0.50, 0.74],
             anchor='y3',
-            title="1000 Genomes East Asia",
+           
             range=[minx, maxx]
         ),
         yaxis3=dict(
@@ -341,7 +393,7 @@ def GetFreqPlotlyJSON2(freq_dist):
         xaxis4=dict(
             domain=[0.75, 1.0],
             anchor='y4',
-            title="1000 Genomes Europe",
+             
             range=[minx, maxx]
         ),
         yaxis4=dict(
@@ -350,6 +402,7 @@ def GetFreqPlotlyJSON2(freq_dist):
 
     plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
     plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
+    print(plotly_plot_json_layoutb)
     return plotly_plot_json_datab, plotly_plot_json_layoutb
 
 def GetFreqPlotlyJSON(freq_dist):
@@ -372,12 +425,117 @@ def GetFreqPlotlyJSON(freq_dist):
     plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
     return plotly_plot_json_datab, plotly_plot_json_layoutb
 
-exon_width = 0.3
-gene_width = 0.03
-gene_color = "black"
-def GetGeneShapes(region_data, region_query, DbSTRPath):
+"""
+    New version of the frequency plot, for the API data 
+"""
+def GetFreqPlot(freq_dist):
+    data = []
+
+    for cohort in freq_dist.groups.keys():
+        items = freq_dist.get_group(cohort)
+        trace = go.Bar(
+            x=items['copies'],
+            y=items['percentage'],
+            name = cohort
+        )
+        data.append(trace)
+    
+    layout = go.Layout(
+        width = 1200,
+        barmode = 'group',     
+              
+        xaxis=dict(
+            automargin = True,
+            titlefont=dict(size=20),
+            title="Number of motif copies",
+        ),
+        yaxis=dict(
+            automargin = True,
+            title_text="Fraction in in a population (%)",
+            titlefont=dict(size=20),
+            showline=True
+        )
+    )
+    plotly_plot_json_datab = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+    plotly_plot_json_layoutb = json.dumps(layout, cls=plotly.utils.PlotlyJSONEncoder)
+    return plotly_plot_json_datab, plotly_plot_json_layoutb
+
+"""
+New version of the graph function, for the API data
+"""
+def GetGeneGraph(region_query):
+    genes = []
+    colpos = region_query.find(":")
+    if colpos < 0: # search is by gene
+            gene_url = API_URL + '/genefeatures/?gene_names=' + region_query 
+            print("calling api with " + gene_url)
+    else:
+        gene_url = API_URL + '/genefeatures/?reqion_query=' + region_query 
+        print(gene_url)
+    
+    resp = requests.get(gene_url)
+    genes = json.loads(resp.text)
+    
+    min_start = 99999999999
+    max_end = 0
+    shapes = []
+    num_genes = len(genes) if genes else 0
+    print("GetGeneGraph")
+    print(num_genes)
+    print(range(num_genes))
+    for i in range(num_genes):
+        gene = genes[i]
+        print(gene)
+        if (gene['start'] < min_start): min_start = gene['start']
+        if (gene['end'] > max_end): max_end = gene['end'] 
+        
+
+        buf = int((max_end-min_start)*(GENEBUFFER))
+        max_end = max_end + buf
+        min_start = min_start - buf
+
+        shape = {
+            "type": "rect",
+            "x0": gene['start'],
+            "x1": gene['end'],
+            "y0": (i+1)-GENE_WIDTH/2,
+            "y1": (i+1)+GENE_WIDTH/2,
+            "fillcolor": GENE_COLOR,
+            "line": {"width": 0}
+            }
+        shapes.append(shape)
+        # Then put each feature (exons only)
+        for exon in gene['exons']:
+            shape = {
+                "type": "rect",
+                "x0": exon['start'],
+                "x1": exon['end'],
+                "y0": (i+1)-EXON_WIDTH/2,
+                "y1": (i+1)+EXON_WIDTH/2,
+                "fillcolor": GENE_COLOR,
+                "line": {"width": 0}
+                }
+            shapes.append(shape)
+    if num_genes != 0:
+        trace = go.Scatter(
+            x = [gene['start'] for gene in genes],
+            y = [(i+1+EXON_WIDTH) for i in range(num_genes)],
+            mode = "text",
+            hoverinfo="none",
+            textposition='middle right',
+            text = [GetGeneText(gene['name'], gene['strand']) for gene in genes],
+            textfont=dict(
+                family='sans serif',
+                size=20,
+                color='black')
+        )
+    else:
+        trace = []
+    return trace, shapes, num_genes, min_start, max_end
+
+def GetGeneShapes(region_query, DbSTRPath):
+    print("GetGeneShapes")
     ct = connect_db(DbSTRPath).cursor()
-    genebuf = 0.1
     # First, get list of genes in this region
     genes = []
     colpos = region_query.find(":")
@@ -405,6 +563,7 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
     max_end = 0
     # Then, for each gene get features 
     for i in range(len(genes)):
+        print(genes)
         gene = genes[i]
         feature_query = ("select fe.id,fe.start,fe.end,fe.strand from features fe, newattrib at where at.attrib='gene_name' and at.value='{}' and fe.id=at.id").format(gene)
         feature_df = ct.execute(feature_query).fetchall()
@@ -413,7 +572,7 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
         if (gene_start < min_start): min_start = gene_start
         gene_end = max([int(item[2]) for item in feature_df])
         if (gene_end > max_end): max_end = gene_end
-        buf = int((max_end-min_start)*(genebuf))
+        buf = int((max_end-min_start)*(GENEBUFFER))
         max_end = max_end + buf
         min_start = min_start - buf
         gene_starts.append(gene_start)
@@ -424,9 +583,9 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
             "type": "rect",
             "x0": gene_start,
             "x1": gene_end,
-            "y0": (i+1)-gene_width/2,
-            "y1": (i+1)+gene_width/2,
-            "fillcolor": gene_color,
+            "y0": (i+1)-GENE_WIDTH/2,
+            "y1": (i+1)+GENE_WIDTH/2,
+            "fillcolor": GENE_COLOR,
             "line": {"width": 0}
             }
         shapes.append(shape)
@@ -437,15 +596,15 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
                 "type": "rect",
                 "x0": int(f[1]),
                 "x1": int(f[2]),
-                "y0": (i+1)-exon_width/2,
-                "y1": (i+1)+exon_width/2,
-                "fillcolor": gene_color,
+                "y0": (i+1)-EXON_WIDTH/2,
+                "y1": (i+1)+EXON_WIDTH/2,
+                "fillcolor": GENE_COLOR,
                 "line": {"width": 0}
                 }
             shapes.append(shape)
     trace = go.Scatter(
         x = gene_starts,
-        y = [(i+1+exon_width) for i in range(len(genes))],
+        y = [(i+1+EXON_WIDTH) for i in range(len(genes))],
         mode = "text",
         hoverinfo="none",
         textposition='middle right',
@@ -457,12 +616,12 @@ def GetGeneShapes(region_data, region_query, DbSTRPath):
     )
     return trace, shapes, len(genes), min_start, max_end
 
-def GetGeneText(gene, strand):
+def GetGeneText(gene_name, strand):
     txt = "<i>"
     if strand == "+":
-        txt += gene + " " + "&#8594;"
+        txt += gene_name + " " + "&#8594;"
     else:
-        txt += "&#8592;" + " " + gene
+        txt += "&#8592;" + " " + gene_name
     txt += " "*3
     txt += "</i>"
     return txt

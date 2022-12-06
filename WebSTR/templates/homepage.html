@@ -5,53 +5,61 @@
     </script>
     <div class="container">
       <div class="row">
-	  <div class="col-md-1"></div>
-	  <div class="col-md-9">
-	    <br>
-	    <div class="bg-image">
-	      <br>
-              <h1 id="home-title">WebSTR: a population-wide database of short tandem repeat variation in humans</h1>
-	      <br>
-	    </div>
-	</div>
+        <div class="col-md-12">
+      
+          <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light bg-image">
+            
+                  <h1 id="home-title" class="display-4 font-weight-normal">
+                    WebSTR: a population-wide database of short tandem repeat variation in humans
+                  </h1>
+            
+          </div>
+        </div>
       </div>
       <div class="row">
-	<div class="col-md-1"></div>
-        <div class="col-md-9">
-          <div id="home-searchbox">
-            <form action="/awesome">
-              <input type="submit" style="display: none;"/>
-              <input id="home-searchbox-input" name="query" class="form-control input-lg awesomebar" type="text" placeholder="Get started by searching for a gene or genomic region"/>
-              <input type="submit" style="position: absolute; left: -9999px"/>
-            </form>
-            <p class="text-muted">
-              Examples - Gene: <a href="/awesome?query=PCSK9">PCSK9</a>,
-              Region: <a href="/awesome?query=22:46615715-46625880">22:46615715-46625880</a>
-            </p>
-          </div>
-        </div>
-	<div class="col-md-1"></div>
+        <div class="col-md-12">
+            <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light">
+              <div id="home-searchbox">
+                <form action="/search">
+                    <div class="form-group">
+                      <select name="genome" class="form-control">
+                        <option selected value="hg38">H. Sapiens (hg38)</option>
+                        <option value="hg19">H. Sapiens (hg19)</option>
+                      </select>
+                      <small class="form-text text-muted">
+                        Pick a genome
+                      </small>
+                    </div>
+
+                    <div class="form-group">              
+                      <input id="home-searchbox-input" name="query" class="form-control mr-sm-2" type="text" placeholder="Get started by searching for a gene or genomic region"/>
+                      <small class="form-text text-muted">
+                        Examples - Gene: <a href="/search?query=PCSK9&genome=hg38">PCSK9</a>,
+                        Region: <a href="/search?query=22:46615715-46625880&genome=hg19">22:46615715-46625880</a>
+                      </small>
+                    </div>  
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+              </div>
+           </div>
+        </div>    
       </div>
-      <div class="row" style="font-size: 18px;">
-	<div class="col-md-1"></div>
-        <div class="col-md-9">
-	  <a name="about"></a>
-          <div>
-            <p>
-	      WebSTR contains population and genome-wide information about genetic variation and other characteristics of short tandem repeats (STRs) in humans including:
-	      <ul>
-		<li>Expression STRs in GTEx (see <a href="https://www.biorxiv.org/content/early/2018/12/13/495226">Fotsing <em>et al.</em></a>)</li>
-		<li>STR imputation metrics (see <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6199332/">Saini <em>et al.</em></a>)</li>
-		<li>STR mutation rates and constraint scores (see <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5679271/">Gymrek <em>et al.</em></a>)</li>
-		<li>Per-cohort allele frequencies at each STR</li>
-	      </ul>
-	    </p>
-	    <p>
-	    The <a href="/about">about</a> page describes the datasets in detail and a brief tutorial to help you get started.
-	    </p>
-          </div>
+      <div class="row">
+        <div class="col-md-12">
+            
+          <div class="p-3 p-md-5 m-md-3 text-center">
+                  <p>
+                  WebSTR contains population and genome-wide information about genetic variation and other characteristics of short tandem repeats (STRs) in humans.
+                  </p>
+                  
+                  <p>
+                  The <a href="/about">about</a> page describes the available datasets in detail and a brief tutorial to help you get started.
+                  </p>
+            </div>
         </div>
       </div>
+    </div>
+
 <!--
       <div class="row" style="font-size: 16px;">
 	<div class="col-md-4">

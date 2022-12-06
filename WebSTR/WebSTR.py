@@ -4,28 +4,35 @@ WebSTR database application
 """
 
 import argparse
+#import dash
 from flask import Flask, redirect, render_template, request, session, url_for
+#from dash.dependencies import Output, Input, State
 from collections import deque
 import pandas as pd
-import numpy as np
+import numpy as npa
 import json
 from textwrap import dedent as d
 import sys
 import os
 
+#from locus_view_dash import *
 from locus_view import *
 from region_view import *
 
 #################### Database paths ###############
 PLATFORM = "snorlax" # or AWS
+BASEPATH =  "/home/oxana/projects/dbstr/data/"
 if PLATFORM == "snorlax":
-    BasePath = "/storage/resources/dbase/dbSTR/SS1/" # TODO this is allele freq. not used now
-    DbSTRPath = "/storage/resources/dbase/dbSTR/"
-    RefFaPath = "/storage/resources/dbase/human/hg19/hg19.fa"
+    #BasePath = "/storage/resources/dbase/dbSTR/SS1/" # TODO this is allele freq. not used now
+    #DbSTRPath = "/storage/resources/dbase/dbSTR/"
+    #RefFaPath_hg19 = "/storage/resources/dbase/human/hg19/hg19.fa"
+    DbSTRPath = BASEPATH
+    RefFaPath_hg19 = BASEPATH + "hg19.fa"
+    RefFaPath_hg38 = BASEPATH + "hg38.fa"
 elif PLATFORM == "AWS":
-    BasePath = ""
+    #BasePath = ""
     DbSTRPath = ""
-    RefFaPath = "" # TODO
+    RefFaPath_hg19 = "" # TODO
 else:
     sys.stderr.write("Could not locate database files\n")
     sys.exit(1)
@@ -34,39 +41,127 @@ else:
 server = Flask(__name__)
 server.secret_key = 'dbSTR' 
 
-#################### Render region page ###############
-@server.route('/awesome')
-def awesome():
-    region_queryOrg = request.args.get('query')
-    region_query = region_queryOrg.upper()
-    region_data = GetRegionData(region_query, DbSTRPath)
-    if region_data.shape[0] > 0:
-        strs_id = region_data.strid.unique()
-        H_data = GetHCalc(strs_id,DbSTRPath)
-        estr_data = GetestrCalc(strs_id,DbSTRPath)
-        Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
-        Regions_data = pd.merge(Regions_data, estr_data, left_on='strid', right_on = 'str_id', how='left')
-        Regions_data = Regions_data.replace(np.nan, '', regex=True)
-        plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(Regions_data, region_query, DbSTRPath)
-        return render_template('view2.html',table=Regions_data.to_records(index=False),
-                               graphJSON=plotly_plot_json, layoutJSON=plotly_layout_json,
-                               chrom=region_data["chrom"].values[0].replace("chr",""),
-                               strids=list(Regions_data["strid"]))
-    else:
-        return render_template('view2_nolocus.html')
-
 #################### Render locus page ###############
+#app = dash.Dash(__name__, server=server, url_base_pathname='/dashapp')
+#app.config['suppress_callback_exceptions']=True
+#SetupDashApp(app)
+#
+#@app.callback(dash.dependencies.Output('field-dropdown','value'),
+#              [dash.dependencies.Input('url', 'href')])
+#def main_display_page(href): return display_page(href)
+#
+#@app.callback(Output('table2', 'rows'), [Input('field-dropdown', 'value')])
+#def main_update_table(user_selection): return update_table(user_selection, BasePath)
+#
+#@app.callback(Output('STRtable', 'rows'), [Input('field-dropdown', 'value')])
+#def main_getdata(user_selection): return getdata(user_selection, BasePath)
+#
+#@app.callback(Output('Main-graphic','figure'),
+#              [Input('table2','rows')])
+#def main_update_figure(rows): return update_figure(rows)
 
-reffa = pyfaidx.Fasta(RefFaPath)
+#################### Render region page ###############
+
+@server.route('/search')
+def search():
+    region_queryGenome = request.args.get('genome')
+    print("Selected genome")
+    print(region_queryGenome)
+    print("___________________________________")
+    region_queryOrg = request.args.get('query')
+    print(region_queryOrg)
+    region_query = region_queryOrg.upper()
+
+    if (region_queryGenome == 'hg19'):
+        region_data = GetRegionData(region_query, DbSTRPath)
+        
+        if region_data.shape[0] > 0:
+            strs_id = region_data.strid.unique()
+
+            H_data = GetHCalc(strs_id,DbSTRPath)
+            estr_data = GetestrCalc(strs_id,DbSTRPath)
+            Regions_data = pd.merge(region_data, H_data, left_on='strid', right_on = 'str_id')
+            Regions_data = pd.merge(Regions_data, estr_data, left_on='strid', right_on = 'str_id', how='left')
+            Regions_data = Regions_data.replace(np.nan, '', regex=True)
+            # Get the STRs on the plotly graph
+            print("About to start with the graph")
+            Regions_data.rename(columns = {'chrom':'chr', 'str.start':'start', 'str.end': 'end'}, inplace = True)
+            print(Regions_data)
+            #chrom = Regions_data["chr"].values[0].replace("chr","")
+            gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end = GetGeneShapes(region_query, DbSTRPath)
+            print(max_gene_end)
+            region_data2 = Regions_data
+            #if (max_gene_end) > 0:
+            #    region_data2 =  GetRegionData(region_data["chr"].values[0] + ":" + str(min_gene_start) + "-" + str(max_gene_end), DbSTRPath)
+
+            plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(region_data2, gene_trace, gene_shapes, numgenes)
+
+            return render_template('view2.html',
+                                table = Regions_data.to_records(index=False),
+                                graphJSON = plotly_plot_json, layoutJSON = plotly_layout_json,
+                                chrom = region_data["chr"].values[0].replace("chr",""),
+                                strids = list(Regions_data["strid"]),
+                                genome = region_queryGenome) 
+        else:
+            return render_template('view2_nolocus.html')
+    else:
+        # Use the API, because hg38 is requested
+        region_data_hg38 = GetRegionDataAPI(region_query)
+        if region_data_hg38.shape[0] > 0:
+            gene_trace_hg38, gene_shapes_hg38, numgenes_hg38, min_gene_start_hg38, max_gene_end_hg38 = GetGeneGraph(region_query)
+            plotly_plot_json_hg38, plotly_layout_json_hg38 = GetGenePlotlyJSON(region_data_hg38, gene_trace_hg38, gene_shapes_hg38, numgenes_hg38)
+            print(region_data_hg38.to_records(index=False))
+            return render_template('view2.html',
+                                    table = region_data_hg38.to_records(index=False),
+                                    graphJSON = plotly_plot_json_hg38, layoutJSON = plotly_layout_json_hg38,
+                                    chrom = region_data_hg38["chr"].values[0].replace("chr",""),
+                                    strids = list(region_data_hg38["repeat_id"]),
+                                    genome = region_queryGenome)
+        else:
+            return render_template('view2_nolocus.html')
+
+
+
 @server.route('/locus')
 def locusview():
-    str_query = request.args.get('STRID')
-    chrom, start, end, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
-    gtex_data = GetGTExInfo(str_query, DbSTRPath)
-    mut_data = GetMutInfo(str_query, DbSTRPath)
-    imp_data = GetImputationInfo(str_query, DbSTRPath)
-    imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
-    freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
+    print("locusview")
+    str_query = request.args.get('repeat_id')
+    genome_query = request.args.get('genome')
+    print((genome_query == 'hg38'))
+    mut_data = []
+    imp_data = []
+    gtex_data = []
+    imp_allele_data = []
+    freq_dist = []
+    crc_data = []
+    gene_name = ""
+    gene_desc = ""
+    motif = ""
+    copies = ""
+    plotly_plot_json_datab = dict()
+    plotly_plot_json_layoutb = dict()
+
+    if ((genome_query is None) or (genome_query == 'hg19')):
+        reffa = pyfaidx.Fasta(RefFaPath_hg19)
+
+        chrom, start, end, motif, copies, seq = GetSTRInfo(str_query, DbSTRPath, reffa)
+        gtex_data = GetGTExInfo(str_query, DbSTRPath)
+        mut_data = GetMutInfo(str_query, DbSTRPath)
+        imp_data = GetImputationInfo(str_query, DbSTRPath)
+        imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
+        freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
+        print(freq_dist)
+        if len(freq_dist) > 0:
+            plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
+        
+    elif (genome_query == 'hg38'):
+        print("locus view hg38")
+        reffa = pyfaidx.Fasta(RefFaPath_hg38)
+        chrom, start, end, seq, gene_name, gene_desc, motif, copies, crc_data = GetSTRInfoAPI(str_query, reffa)
+        freq_dist = GetFreqSTRInfoAPI(str_query)
+        if len(freq_dist) > 0:
+            plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlot(freq_dist)
+        
     if len(mut_data) != 1: mut_data = None
     else:
         mut_data = list(mut_data[0])
@@ -76,13 +171,16 @@ def locusview():
         imp_data = list(imp_data[0])
 
     if len(gtex_data) == 0: gtex_data = None
+    if len(crc_data) == 0: crc_data = None
     if len(imp_allele_data) == 0: imp_allele_data = None
-    if len(freq_dist) > 0:
-        plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
-        return render_template('locus.html', strid=str_query,
+
+    
+    print("about to render")
+    return render_template('locus.html', strid=str_query,
                            graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
                            chrom=chrom.replace("chr",""), start=start, end=end, strseq=seq,
-                           estr=gtex_data, mut_data=mut_data,
+                           gene_name=gene_name, gene_desc=gene_desc,
+                           estr=gtex_data, mut_data=mut_data, motif=motif, copies=copies, crc_data = crc_data,
                            imp_data=imp_data, imp_allele_data=imp_allele_data,freq_dist=freq_dist)
 
 #################### Render HTML pages ###############
@@ -127,6 +225,7 @@ def internal_server_error(error):
 def unhandled_exception(e):
     server.logger.error('Unhandled Exception: %s', (e))
     return render_template('500.html', emsg = e), 500
+ 
 
 #################### Set up and run the server ###############
 def main():

@@ -32,30 +32,79 @@ table.tables1 {
 </style>
 
 <div class="container-fluid">
-  <div class="row">
+  <div class="row justify-content-center">
     <div class="col-md-10 col-md-offset-1">
-
-      <h1>chr{{ chrom }}:{{ start }}-{{ end }}</h1>
-
-      <button class="collapsible">STR sequence</button>
+	  <br><br>	
+      <h1>STR chr{{ chrom }}:{{ start }}-{{ end }}</h1>
+		
+	
+	
+      <button class="collapsible active">Reference sequence</button>
       <div class="content" style="display:block">
 	<p>
-	  <br><br>
+		<h4>Motif {{ motif }} repeats {{ copies }} times in the reference sequence. </h4>
+	  <br> 
 	  {{ strseq|safe }}
 	</p>
+
+	
       </div>
-      <br><br>
+      <br> 
+	  <button class="collapsible active">Gene mapping</button>
+	   <div>
+		  {% if gene_name == "" %}
+		   <p> No gene information available </p>
+		   {% else %}
+		   <p> Maps to {{ gene_name }}, {{ gene_desc }} </p>
+		   {% endif %}
+		</div>   
       <!-- Div for the plotly chart -->
         <button class="collapsible">Allele Frequency</button>
-	<div id="barchart" class="chart"></div>
+		<div class="content">
+	<div id="barchart" class="chart" ></div>
+	{% if graphJSONx == {} %}
+	<p> No data on allele frequencies in healthy genomes available. </p>
+	{% else %}
     <script type="text/javascript">
         var graphsx = {{graphJSONx | safe}};
         var graphslayoutx = {{graphlayoutx | safe}};
-            Plotly.plot('barchart',graphsx,graphslayoutx);
+		var barchart = document.getElementById('barchart');
+        Plotly.newPlot(barchart,graphsx,graphslayoutx);
     </script>
+	{% endif %}
+</div>
      <br><br>
+	 <button class="collapsible">Variation in Colorectal Cancer (TCGA cohort)</button>
+      <div class="content  justify-content-center">
+         {% if crc_data == None %}
+          <p> No Data Available. </p>
+          {% else %}
+		  
+	<table border="1" cellpadding="5" cellspacing="5" class="tablesorter">
+	  <thead class="tablesorter-header"><th>Parameter</th><th>Value</th></thead>
+	  <tbody>
+	    <tr>
+	      <td><b>Total calls</b></td>
+	      <td>{{ crc_data[0]  }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Fraction variable</b></td>
+	      <td>{{ '%.3f' % crc_data[1]|float }}</td>
+	    </tr>
+	    <tr>
+	      <td><b>Average length difference</b></td>
+	      <td>{{ '%.3f' % crc_data[2]|float }}</td>
+	    </tr>
+	    
+	  </tbody>
+	</table>
+
+        {% endif %}
+		See the <a href="/about">about page</a> for detailed description of each parameter.
+	</div>
+		<br><br>
       <button class="collapsible">Expression STRs</button>
-      <div class="content" style="display:none">
+      <div class="content">
           {% if estr == None %}
           <p> No eSTRs found. </p>
           {% else %}
@@ -79,7 +128,7 @@ table.tables1 {
       </div>
       <br><br>
       <button class="collapsible">Mutation and constraint</button>
-      <div class="content" style="display:none">
+      <div class="content">
          {% if mut_data == None %}
           <p> No Data Available. </p>
           {% else %}
@@ -121,7 +170,7 @@ table.tables1 {
       </div>
       <br><br>
       <button class="collapsible">STR Imputation</button>
-      <div class="content" style="display:none">
+      <div class="content">
 	<h4>Locus-level imputation metrics</h4>
         {% if imp_data  == None %}
           <p> No Data Available. </p>

@@ -12,21 +12,31 @@
 
     <title>WebSTR: a population-wide database of short tandem repeat variation in humans</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    -->
+    <!--<link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+     -->
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!--tablesorter's css-->
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/theme.default.css') }}"> 
+    
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/typeaheadjs.css') }}">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+    
     <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.11.1.min.js') }}"></script>
     
     {% block loads %}{% endblock %}
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='typeahead.bundle.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='plotly-2.16.1.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.pager.js') }}"></script>
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/theme.default.css') }}"> <!--tablesorter's css-->
     <script type="text/javascript" src="{{ url_for('static', filename='underscore-min.js') }}"></script>
 
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+
     <script type="text/javascript" src="{{ url_for('static', filename='d3.v3.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
     <script type="text/javascript" src="{{  url_for('static', filename='exac.js') }}"></script>
@@ -87,7 +97,7 @@
 }
 
 .collapsible {
-  background-color: black;
+  background-color:#343a40;
   color: white;
   cursor: pointer;
   padding: 10px;
@@ -99,7 +109,7 @@
 }
 
 .active {
-  background-color: green;
+  background-color: #17a2b8;
 }
 
 .collapsible:hover {
@@ -108,9 +118,10 @@
 
 .content {
   padding: 0 18px;
+  margin-top: 10px;
   display: none;
   overflow: hidden;
-  width: 100%;
+  min-width: 1200px;
   background-color: #FFFFFF;
   border: 1px solid white;
 
@@ -119,61 +130,41 @@
 
 </head>
 <body>
-<nav class="navbar navbar-default" role="navigation" style="background: #222;">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle pull-right" data-toggle="collapse" data-target="#navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/" style="color: white; font-weight: bold; float: left; font-size: 15px;">WebSTR Browser Beta</a>
-            <div class="col-xs-5" id="navbar_form_container">
-                <form action="/awesome" class="navbar-form" role="search">
-                    <div class="form-group" id="navbar-awesomebar">
-                        <input type="submit" style="display: none;"/>
-                        <input id="navbar-searchbox-input" name="query" class="form-control awesomebar" type="text" placeholder="Gene, transcript, variant, or region"/>
-                        <input type="submit" style="position: absolute; left: -9999px"/>
-                    </div>
-                </form>
+    
+    <nav class="site-header sticky-top py-1 navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container d-flex flex-column flex-md-row justify-content-between">
+        <a class="navbar-brand py-2" class="nav-item active" href="/">WebSTR 1.0</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+          <ul class="navbar-nav mr-auto mt-2 mt-lg-0 bg-dark py-2">
+            <li class="nav-item"><a class="nav-link" href="/about" class="text-white">About</a></li>
+            <li class="nav-item"><a class="nav-link" href="/downloads" class="text-white">Downloads</a></li>
+            <li class="nav-item"><a class="nav-link" href="/terms" class="text-white">Terms</a></li>
+            <li class="nav-item "><a class="nav-link" href="/contact" class="text-white">Contact</a></li>
+            <li class="nav-item"><a class="nav-link" href="/faq" class="text-white">FAQ</a></li>
+        </ul>
+          
+          <form action="/search" class="form-inline my-2 my-lg-0" role="search">
+            <div class="form-group" id="navbar-awesomebar">
+              <select name="genome" class="form-control" style="display:none">
+                <option selected value="hg38">H. Sapiens (hg38)</option>
+              </select>
+                <input id="navbar-searchbox-input" name="query" class="form-control mr-sm-2" type="text" placeholder="Gene, transcript, variant, or region"/>
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
             </div>
+        </form>
         </div>
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="navbar-collapse">
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="/about" style="color: white; font-weight: bold;">About</a></li>
-                <li><a href="/downloads" style="color: white; font-weight: bold;">Downloads</a></li>
-                <li><a href="/terms" style="color: white; font-weight: bold;">Terms</a></li>
-                <li><a href="/contact" style="color: white; font-weight: bold;">Contact</a></li>
-                <li><a href="/faq" style="color: white; font-weight: bold;">FAQ</a></li>
-            </ul>
-        </div><!-- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
-</nav>
+    </div>
+      </nav>
+
+
 <div class="container-fluid jobs">
     <p>
     </p>
 </div>
-{#<div id="header">#}
-{#    <div class="container">#}
-{#        <span>#}
-{#            <a href="/" style="color: white; font-weight: bold; float: left;">ExAC Browser (Beta)</a>#}
-{#        </span>#}
-{#        <form action="/awesome" class="navbar-form navbar-left" role="search">#}
-{#            <div class="form-group">#}
-{#                <input type="submit" style="display: none;"/>#}
-{#                <input id="navbar-searchbox-input" name="query" class="form-control" type="text" placeholder="Gene, transcript, variant, or region"/>#}
-{#                <input type="submit" style="position: absolute; left: -9999px"/>#}
-{#            </div>#}
-{#        </form>#}
-{#        <div id="header-links">#}
-{#            <a href="/">Home</a> |#}
-{#            <a href="/downloads">Downloads</a> |#}
-{#            <a href="/terms">Terms</a> |#}
-{#            <a href="/about">About</a>#}
-{#        </div>#}
-{#    </div>#}
-{#</div>#}
+
 {% block body %}{% endblock %}
 </body>

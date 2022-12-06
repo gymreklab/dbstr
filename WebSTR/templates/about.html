@@ -2,36 +2,46 @@
 {% block body %}
     <div class="container">
       <div class="row" style="font-size: 18px;">
-	<h1>About WebSTR</h1>
-	<ul>
-	  <li><a href="#start">Getting started</a></li>
-	  <li><a href="#datasets">Datasets</a></li>
-	  <li><a href="#ack">Shoutouts</a></li>
-	</ul>
+	
+		<h1>About WebSTR</h1>
+	
       </div>
         <div class="row" style="font-size: 16px;">
+			<p>
+			<ul>
+				<li><a href="#start">Getting started</a></li>
+				<li><a href="#datasets">Datasets</a></li>
+				<li><a href="#ack">Shoutouts</a></li>
+			  </ul>
+			</p>
             <div>
 	      <a name="start"></a>
 	      <h2>Getting started</h2>
 
-	      <h4>1. Searching</h4>
+	      <h4>1. Searching for STRs</h4>
 	      <p>
-		To get started, from the <a href="/">WebSTR homepage</a>, enter one of the following into the search bar:
+		
+			To get started, from the <a href="/">WebSTR homepage</a>, 
+		pick a genome assembly version in the dropdown. WebSTR currently stores some datasets that are only
+		mapped to the hg19/GRCh37 coordinates. The default value is hg38 and corresponds to Ensembl version GRCh38.p2.
+		
+		
+		You can search for STRs by entering one of the following into the search bar:
 		<ul>
-		  <li>A gene name (e.g., <em><a href="/awesome?query=PCSK9">PCSK9</a></em> or <em><a href="/awesome?query=RFT1">RFT1</a></em>)</li>
-		  <li>An Ensembl identifier (e.g., <a href="/awesome?query=ENSG00000169174">ENSG00000169174</a> or <a href="/awesome?query=ENSG00000163933">ENSG00000163933</a>)</li>
-		  <li>A genomic region using the syntax chrom:start-end (e.g., <a href="/awesome?query=22:46615715-46625880">22:46615715-46625880</a>). WebSTR is currently based on hg19/GRCh37 coordinates.</li>
+		  <li>A gene name (e.g., <em><a href="/search?query=PCSK9&genome=hg38">PCSK9</a></em> or <em><a href="/search?query=RFT1&genome=hg38">RFT1</a></em>)</li>
+		  <li>An Ensembl identifier (e.g., <a href="/search?query=ENSG00000169174&genome=hg38">ENSG00000169174</a> or <a href="/search?query=ENSG00000163933&genome=hg38">ENSG00000163933</a>)</li>
+		  <li>A genomic region using the syntax chrom:start-end (e.g., <a href="/search?query=22:46615715-46625880&genome=hg38">22:46615715-46625880</a>).</li>
 		</ul>
 		
-		If you enter a gene name that is invalid or cannot be found, an invalid genomic region, or a genomic region spanning more than 1 Mb, you will receive an error message.
+		If you enter a gene name/id that is invalid or cannot be found, an invalid genomic region, or a genomic region spanning more than 1 Mb, you will receive an error message.
 	      </p>
 	      
 	      <h4>2. Region pages</h4>
 	      <p>
-		A valid search will take you to a region-level page. The top of this page displays the exon/intron structure of genes in the region. Arrows next to the gene names represent the template strand of the gene relative to hg19. Each dot represents an STR in the region, color-coded by the motif length (gray=homopolymer, red=dinucleotide, gold=trinucleotide, blue=tetranucleotide, green=pentanucleotide, and purple=hexanucleotide). Hovering over an STR will display the coordinates and motif. Clicking an STR will take you to the STR page for that locus.
+		A valid search will take you to a region-level page. The top of this page displays the exon/intron structure of genes in the region. Arrows next to the gene names represent the template strand of the gene. Each dot represents an STR in the region, color-coded by the motif length (gray=homopolymer, red=dinucleotide, gold=trinucleotide, blue=tetranucleotide, green=pentanucleotide, and purple=hexanucleotide). Hovering over an STR will display the coordinates and motif. Clicking an STR will take you to the STR page for that locus.
 	      </p>
 	      <p>
-		The bottom of the page displays a table of all STRs identified in the region. It includes the coordinates (hg19), motif sequence, and length of the repeat in the reference genome.
+		The bottom of the page displays a table of all STRs identified in the region. It includes the coordinates, motif sequence, and length of the repeat in the reference genome.
 	      </p>
 	      
 	      <h4>3. STR pages</h4>
@@ -44,7 +54,19 @@
 	      <h2>STR datasets</h2>
 	      
 	      STR pages feature datasets from the following studies:
+		  <br><br>
+		  <h4> EnsembleTR (To be published) </h4>
+		  <p>Lorem ipsum dolor</p>
+		  <h4> Sinergia-CRC (TCGA cohort) (To be published) </h4>
+		  <p> For this reference panel we used statistical framework TRAL to find STRs in the human reference genome. 
+			The Sinergia-CRC repeats have been genotyped using GangSTR on more than 400 genomes from patients with 
+			colorectal cancer available to us through the TCGA consortium. This project is part of a larger effort 
+			<a href="https://www.zhaw.ch/en/research/research-database/project-detailview/projektid/4244/">
+			"Trans-omic approach to colorectal cancer: an integrative computational and clinical perspective"
+		     </a> funded by a <a href="https://www.snf.ch/en/HzVMPWm96mz69ZJ8/funding/programmes/sinergia"></a> SNSF Sinergia grant.</a>
+ 		</p>
 	      <br><br>
+		  <h3> Earlier studies (mapped to hg19) </h3>
 	      <h4><u>1. Expression STRs (eSTRs) (<a href="https://www.biorxiv.org/content/early/2018/12/13/495226">Fotsing <em>et al.</em> 2018</a>)</u></h4>
 	      <p>
 	      In this study we analyzed STRs in whole genome sequencing data from the <a href="gtexportal.org">Genotype Tissue Expression (GTEx) Project</a> for 650 individuals and gene expression across 17 tissues to detect STRs whose lengths are correlated with expression of nearby genes (termed "eSTRs"). We further used CAVIAR to fine-map associations for individual genes against nearby SNPs to identify eSTRs most likely acting as causal variants. The figure below shows a schematic of the study design.
