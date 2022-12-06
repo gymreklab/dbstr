@@ -91,8 +91,8 @@ def search():
             gene_trace, gene_shapes, numgenes, min_gene_start, max_gene_end = GetGeneShapes(region_query, DbSTRPath)
             print(max_gene_end)
             region_data2 = Regions_data
-            if (max_gene_end) > 0:
-                region_data2 =  GetRegionData(region_data["chr"].values[0] + ":" + str(min_gene_start) + "-" + str(max_gene_end), DbSTRPath)
+            #if (max_gene_end) > 0:
+            #    region_data2 =  GetRegionData(region_data["chr"].values[0] + ":" + str(min_gene_start) + "-" + str(max_gene_end), DbSTRPath)
 
             plotly_plot_json, plotly_layout_json = GetGenePlotlyJSON(region_data2, gene_trace, gene_shapes, numgenes)
 
@@ -107,20 +107,19 @@ def search():
     else:
         # Use the API, because hg38 is requested
         region_data_hg38 = GetRegionDataAPI(region_query)
-        gene_trace_hg38, gene_shapes_hg38, numgenes_hg38, min_gene_start_hg38, max_gene_end_hg38 = GetGeneGraph(region_query)
-        
-        #if (max_gene_end_hg38) > 0:
-        #    print("max_gene_end")
-        #    hg38_temp =  GetRegionDataAPI(region_data_hg38["chr"].values[0] + ":" + str(min_gene_start_hg38) + "-" + str(max_gene_end_hg38))
+        if region_data_hg38.shape[0] > 0:
+            gene_trace_hg38, gene_shapes_hg38, numgenes_hg38, min_gene_start_hg38, max_gene_end_hg38 = GetGeneGraph(region_query)
+            plotly_plot_json_hg38, plotly_layout_json_hg38 = GetGenePlotlyJSON(region_data_hg38, gene_trace_hg38, gene_shapes_hg38, numgenes_hg38)
+            print(region_data_hg38.to_records(index=False))
+            return render_template('view2.html',
+                                    table = region_data_hg38.to_records(index=False),
+                                    graphJSON = plotly_plot_json_hg38, layoutJSON = plotly_layout_json_hg38,
+                                    chrom = region_data_hg38["chr"].values[0].replace("chr",""),
+                                    strids = list(region_data_hg38["repeat_id"]),
+                                    genome = region_queryGenome)
+        else:
+            return render_template('view2_nolocus.html')
 
-        plotly_plot_json_hg38, plotly_layout_json_hg38 = GetGenePlotlyJSON(region_data_hg38, gene_trace_hg38, gene_shapes_hg38, numgenes_hg38)
-        print(region_data_hg38.to_records(index=False))
-        return render_template('view2.html',
-                                table = region_data_hg38.to_records(index=False),
-                                graphJSON = plotly_plot_json_hg38, layoutJSON = plotly_layout_json_hg38,
-                                chrom = region_data_hg38["chr"].values[0].replace("chr",""),
-                                strids = list(region_data_hg38["repeat_id"]),
-                                genome = region_queryGenome)  
 
 
 @server.route('/locus')
@@ -152,13 +151,16 @@ def locusview():
         imp_allele_data = GetImputationAlleleInfo(str_query, DbSTRPath)
         freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
         print(freq_dist)
+        if len(freq_dist) > 0:
+            plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
         
     elif (genome_query == 'hg38'):
         print("locus view hg38")
         reffa = pyfaidx.Fasta(RefFaPath_hg38)
         chrom, start, end, seq, gene_name, gene_desc, motif, copies, crc_data = GetSTRInfoAPI(str_query, reffa)
-        #freq_dist = GetFreqSTRInfo(str_query, DbSTRPath)
-        print(chrom)
+        freq_dist = GetFreqSTRInfoAPI(str_query)
+        if len(freq_dist) > 0:
+            plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlot(freq_dist)
         
     if len(mut_data) != 1: mut_data = None
     else:
@@ -172,8 +174,7 @@ def locusview():
     if len(crc_data) == 0: crc_data = None
     if len(imp_allele_data) == 0: imp_allele_data = None
 
-    if len(freq_dist) > 0:
-        plotly_plot_json_datab, plotly_plot_json_layoutb = GetFreqPlotlyJSON2(freq_dist)
+    
     print("about to render")
     return render_template('locus.html', strid=str_query,
                            graphJSONx=plotly_plot_json_datab,graphlayoutx=plotly_plot_json_layoutb, 
